@@ -1,10 +1,4 @@
-// import React, { useState } from 'react';
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-// import { CheckCircle, ArrowRight, Download } from 'lucide-react';
-// import { Button } from '@/components/ui/button';
-// import { useNavigate } from 'react-router-dom';
 
-// const CNCMachining = () => {
 //   const navigate = useNavigate();
 //   const [selectedMaterial, setSelectedMaterial] = useState(null);
 
@@ -386,10 +380,13 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import millingImage from '@/assects/Images/milling.jpg';
+
 import turningImage from '@/assects/Images/CNC_Machining.jpg';
 import productionImage from '@/assects/Images/Special_process.jpg';
 import threadingImage from '@/assects/Images/Sheet_Metal.jpg';
 import printingImage from '@/assects/Images/3D_Printing.jpg';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 const CNCMachining = () => {
   const navigate = useNavigate();
@@ -572,6 +569,21 @@ const CNCMachining = () => {
 
   return (
     <div className="min-h-screen bg-[#151515]">
+     {/* Back Button */}
+      <div className="bg-[#0d0d0d] border-b border-[#301B3F]/30 sticky top-0 z-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <Button
+            onClick={() => navigate('/capabilities')}
+            variant="ghost"
+            className="text-gray-300 hover:text-white"
+            data-testid="back-btn"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+        </div>
+      </div>
+
       {/* Full-screen header / hero with background slideshow */}
       <section className="relative min-h-[100vh] flex items-center overflow-hidden">
         {/* Background slideshow images */}

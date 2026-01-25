@@ -94,7 +94,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Cpu, Box, Printer, Sparkles } from 'lucide-react';
+import { ArrowRight, Cpu, Box, Printer, Sparkles, ArrowLeft } from 'lucide-react';
 import cncVideo from '@/assects/Videos/cnc.mp4';
 import sheetMetalVideo from '@/assects/Videos/CMM.mp4';
 import printingVideo from '@/assects/Videos/3D_printing.mp4';
@@ -237,6 +237,8 @@ const Capabilities = () => {
 
   return (
     <div className="min-h-screen bg-[#151515]">
+   
+
       {/* Hero section with slideshow background */}
       <section className="relative flex min-h-[100vh] items-center justify-center overflow-hidden px-6 py-16 text-center">
         <div className="absolute inset-0">

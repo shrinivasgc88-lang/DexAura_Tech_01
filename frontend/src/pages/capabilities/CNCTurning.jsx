@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import turningHero from '@/assects/Images/CNC_Machining.jpg';
 import turningDetail from '@/assects/Images/Special_process.jpg';
 import turningSurface from '@/assects/Images/milling.jpg';
@@ -76,6 +77,21 @@ const CNCTurning = () => {
 
   return (
     <div className="min-h-screen bg-[#151515]">
+      {/* Back Button */}
+      <div className="bg-[#0d0d0d] border-b border-[#301B3F]/30 sticky top-0 z-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <Button
+            onClick={() => navigate('/capabilities/cnc-machining')}
+            variant="ghost"
+            className="text-gray-300 hover:text-white"
+            data-testid="back-btn"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+        </div>
+      </div>
+
       {/* Hero with slideshow background */}
       <section className="relative flex min-h-[100vh] flex-col items-center justify-center overflow-hidden px-6 py-8 text-center">
         <div className="absolute inset-0">

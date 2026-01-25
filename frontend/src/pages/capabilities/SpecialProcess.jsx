@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, ArrowRight, Flame, Droplet, Hammer, Sparkles, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 const SpecialProcess = () => {
   const navigate = useNavigate();
@@ -223,8 +224,24 @@ const SpecialProcess = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#151515] py-20">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+    <div className="min-h-screen bg-[#151515] ">
+      {/* Back Button */}
+      <div className="bg-[#0d0d0d] border-b border-[#301B3F]/30 sticky top-0 z-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <Button
+            onClick={() => navigate('/capabilities')}
+            variant="ghost"
+            className="text-gray-300 hover:text-white"
+            data-testid="back-btn"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+        </div>
+      </div>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-10">
+
+
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
