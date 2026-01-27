@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
@@ -9,7 +9,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const InstantQuotePage = () => {
-  const { isAuthenticated, token, login } = useAuth();
+  const { isAuthenticated, token, login, register, googleLogin } = useAuth();
   const [showAuth, setShowAuth] = useState(!isAuthenticated);
   const [isLogin, setIsLogin] = useState(true);
   
@@ -27,20 +27,108 @@ const InstantQuotePage = () => {
   const [quote, setQuote] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Load Google Sign-In script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+
+    return () => {
+      if (document.head.contains(script)) {
+        document.head.removeChild(script);
+      }
+    };
+  }, []);
+
   const handleAuth = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      const endpoint = isLogin ? '/auth/login' : '/auth/register';
-      const data = isLogin 
-        ? { email: authForm.email, password: authForm.password }
-        : authForm;
-      
-      const response = await axios.post(`${API}${endpoint}`, data);
-      login(response.data.user, response.data.token);
+      if (isLogin) {
+        // Use the login method from auth context
+        await login(authForm.email, authForm.password);
+      } else {
+        // Use the register method from auth context
+        await register({
+          email: authForm.email,
+          password: authForm.password,
+          name: authForm.name,
+          company: authForm.company
+        });
+      }
       setShowAuth(false);
       toast.success(isLogin ? 'Logged in successfully!' : 'Account created successfully!');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Authentication failed');
+      console.error('Auth error:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Authentication failed';
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    setLoading(true);
+    try {
+      if (!window.google) {
+        throw new Error('Google Sign-In library not loaded');
+      }
+
+      window.google.accounts.id.initialize({
+        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse
+      });
+
+      window.google.accounts.id.renderButton(
+        document.getElementById('instant-quote-google-btn'),
+        { theme: 'dark', size: 'large', width: '100%' }
+      );
+
+      document.getElementById('instant-quote-google-btn').click();
+    } catch (error) {
+      console.error('Google Sign-In error:', error);
+      toast.error('Google Sign-In not available.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleResponse = async (response) => {
+    setLoading(true);
+    try {
+      if (!response.credential) {
+        throw new Error('No credential received from Google');
+      }
+
+      // Decode the JWT token
+      const base64Url = response.credential.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      
+      const googleData = JSON.parse(jsonPayload);
+
+      await googleLogin({
+        google_id: googleData.sub,
+        email: googleData.email,
+        name: googleData.name,
+        picture: googleData.picture
+      });
+
+      setShowAuth(false);
+      toast.success('Logged in successfully with Google!');
+    } catch (error) {
+      console.error('Google authentication error:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Google login failed';
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -145,6 +233,33 @@ const InstantQuotePage = () => {
                   {isLogin ? 'Sign In' : 'Create Account'}
                 </button>
               </form>
+
+              <div style={{ marginTop: '30px', borderTop: '1px solid rgba(145, 10, 103, 0.3)', paddingTop: '20px' }}>
+                <p style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.6)', marginBottom: '15px', fontSize: '14px' }}>
+                  Or {isLogin ? 'sign in' : 'sign up'} with
+                </p>
+                <button
+                  type="button"
+                  onClick={handleGoogleAuth}
+                  disabled={loading}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'rgba(145, 10, 103, 0.1)',
+                    border: '1px solid rgba(145, 10, 103, 0.5)',
+                    borderRadius: '8px',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    transition: 'all 0.3s ease'
+                  }}
+                  data-testid="instant-quote-google-auth"
+                >
+                  {loading ? 'Connecting...' : 'Google'}
+                </button>
+                <div id="instant-quote-google-btn" style={{ display: 'none' }}></div>
+              </div>
               
               <p style={{ textAlign: 'center', marginTop: '20px', color: 'rgba(255, 255, 255, 0.6)' }}>
                 {isLogin ? "Don't have an account? " : 'Already have an account? '}

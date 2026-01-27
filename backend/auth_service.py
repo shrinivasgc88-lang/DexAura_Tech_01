@@ -1,19 +1,38 @@
-from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
 import os
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import bcrypt
 
 SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verify a plain password against a bcrypt hash"""
+    try:
+        # bcrypt.checkpw expects bytes
+        if isinstance(plain_password, str):
+            plain_password = plain_password.encode('utf-8')
+        if isinstance(hashed_password, str):
+            hashed_password = hashed_password.encode('utf-8')
+        return bcrypt.checkpw(plain_password, hashed_password)
+    except Exception as e:
+        print(f"Password verification error: {e}")
+        return False
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    """Hash a password using bcrypt"""
+    try:
+        if isinstance(password, str):
+            password = password.encode('utf-8')
+        # Generate salt and hash the password
+        salt = bcrypt.gensalt(rounds=12)
+        hashed = bcrypt.hashpw(password, salt)
+        return hashed.decode('utf-8')
+    except Exception as e:
+        print(f"Password hashing error: {e}")
+        # If hashing fails, raise the exception rather than continuing
+        raise
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()

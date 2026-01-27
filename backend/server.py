@@ -121,8 +121,11 @@ async def login(credentials: CustomerLogin):
     
     token = create_access_token({"sub": user["id"], "email": user["email"]})
     
+    # Return user data without password_hash
+    customer_data = {k: v for k, v in user.items() if k != "password_hash"}
+    
     return {
-        "customer": Customer(**user),
+        "customer": customer_data,
         "access_token": token,
         "token_type": "bearer"
     }

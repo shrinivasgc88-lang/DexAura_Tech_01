@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,19 @@ const Login = () => {
     phone: ''
   });
 
+  // Load Google Sign-In script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -28,7 +41,9 @@ const Login = () => {
       toast.success('Login successful!');
       navigate('/teamspace');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Login failed');
+      console.error('Login error:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Login failed';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -42,18 +57,86 @@ const Login = () => {
       toast.success('Registration successful!');
       navigate('/teamspace');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Registration failed');
+      console.error('Register error:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Registration failed';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    toast.info('Google login integration in progress');
+    setLoading(true);
+    try {
+      // Initialize Google Sign-In
+      if (!window.google) {
+        throw new Error('Google Sign-In library not loaded');
+      }
+
+      // Use Google Sign-In
+      window.google.accounts.id.initialize({
+        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse
+      });
+
+      // Trigger the Google Sign-In dialog
+      window.google.accounts.id.renderButton(
+        document.getElementById('google-signin-button'),
+        { theme: 'dark', size: 'large', width: '100%' }
+      );
+
+      document.getElementById('google-signin-button').click();
+    } catch (error) {
+      console.error('Google Sign-In error:', error);
+      toast.error('Google Sign-In not available. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleResponse = async (response) => {
+    setLoading(true);
+    try {
+      if (!response.credential) {
+        throw new Error('No credential received from Google');
+      }
+
+      // Decode the JWT token (Google returns a JWT)
+      const base64Url = response.credential.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      
+      const googleData = JSON.parse(jsonPayload);
+
+      // Call the backend Google auth endpoint
+      await googleLogin({
+        google_id: googleData.sub,
+        email: googleData.email,
+        name: googleData.name,
+        picture: googleData.picture
+      });
+
+      toast.success('Login successful with Google!');
+      navigate('/teamspace');
+    } catch (error) {
+      console.error('Google authentication error:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Google login failed';
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#151515] flex items-center justify-center py-12 px-4">
+      {/* Hidden Google Sign-In button container */}
+      <div id="google-signin-button" style={{ display: 'none' }}></div>
+      
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
@@ -171,6 +254,27 @@ const Login = () => {
                   {loading ? 'Creating account...' : 'Create Account'}
                 </Button>
               </form>
+
+              <div className="mt-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-[#301B3F]"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-[#1a1a1a] text-gray-400">Or sign up with</span>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleGoogleLogin}
+                  type="button"
+                  disabled={loading}
+                  variant="outline"
+                  className="w-full mt-4 border-[#301B3F] text-white hover:bg-[#301B3F]/20"
+                  data-testid="google-register-btn"
+                >
+                  {loading ? 'Connecting...' : 'Google'}
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
         </div>

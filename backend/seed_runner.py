@@ -61,70 +61,70 @@ async def seed_database():
         quotes = get_seed_quotes()
         if quotes:
             await db.quotes.insert_many(quotes)
-            print(f"✓ Inserted {len(quotes)} quotes")
+            print(f"[OK] Inserted {len(quotes)} quotes")
         
         # Insert orders
         print("Inserting orders...")
         orders = get_seed_orders()
         if orders:
             await db.orders.insert_many(orders)
-            print(f"✓ Inserted {len(orders)} orders")
+            print(f"[OK] Inserted {len(orders)} orders")
         
         # Insert notifications
         print("Inserting notifications...")
         notifications = get_seed_notifications()
         if notifications:
             await db.notifications.insert_many(notifications)
-            print(f"✓ Inserted {len(notifications)} notifications")
+            print(f"[OK] Inserted {len(notifications)} notifications")
         
         # Insert blog posts
         print("Inserting blog posts...")
         blog_posts = get_seed_blog_posts()
         if blog_posts:
             await db.blog_posts.insert_many(blog_posts)
-            print(f"✓ Inserted {len(blog_posts)} blog posts")
+            print(f"[OK] Inserted {len(blog_posts)} blog posts")
         
         # Insert admin data
         print("Inserting admin data...")
         leads = get_demo_leads()
         if leads:
             await db.leads.insert_many(leads)
-            print(f"✓ Inserted {len(leads)} leads")
+            print(f"[OK] Inserted {len(leads)} leads")
         
         followups = get_demo_followups(leads)
         if followups:
             await db.followups.insert_many(followups)
-            print(f"✓ Inserted {len(followups)} follow-ups")
+            print(f"[OK] Inserted {len(followups)} follow-ups")
         
         meetings = get_demo_meetings(leads)
         if meetings:
             await db.meetings.insert_many(meetings)
-            print(f"✓ Inserted {len(meetings)} meetings")
+            print(f"[OK] Inserted {len(meetings)} meetings")
         
         projects = get_demo_projects()
         if projects:
             await db.projects.insert_many(projects)
-            print(f"✓ Inserted {len(projects)} projects")
+            print(f"[OK] Inserted {len(projects)} projects")
         
         parts = get_demo_parts(projects)
         if parts:
             await db.parts.insert_many(parts)
-            print(f"✓ Inserted {len(parts)} parts")
+            print(f"[OK] Inserted {len(parts)} parts")
         
         suppliers = get_demo_suppliers()
         if suppliers:
             await db.suppliers.insert_many(suppliers)
-            print(f"✓ Inserted {len(suppliers)} suppliers")
+            print(f"[OK] Inserted {len(suppliers)} suppliers")
         
         assignments = get_demo_assignments(projects, parts)
         if assignments:
             await db.supplier_assignments.insert_many(assignments)
-            print(f"✓ Inserted {len(assignments)} supplier assignments")
+            print(f"[OK] Inserted {len(assignments)} supplier assignments")
         
         contact_subs = get_demo_contact_submissions()
         if contact_subs:
             await db.contact_submissions.insert_many(contact_subs)
-            print(f"✓ Inserted {len(contact_subs)} contact submissions")
+            print(f"[OK] Inserted {len(contact_subs)} contact submissions")
         
         print()
         print("=" * 60)

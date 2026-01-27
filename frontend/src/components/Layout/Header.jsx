@@ -271,8 +271,8 @@ const Header = () => {
     <header
       className={`sticky top-0 z-50 border-b transition-[background-color,backdrop-filter,border-color] duration-300 ${headerStateClasses}`}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3" data-testid="header-logo">
             <div className="w-10 h-10 bg-gradient-to-br from-[#720455] to-[#910A67] rounded-lg flex items-center justify-center">

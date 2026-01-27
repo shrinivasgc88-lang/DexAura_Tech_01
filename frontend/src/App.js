@@ -4,6 +4,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { Toaster } from '@/components/ui/sonner';
 import Header from '@/components/Layout/Header';
 import Footer from '@/components/Layout/Footer';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 import '@/App.css';
 
 // Lazy load pages
@@ -48,6 +49,7 @@ function App() {
 const ConditionalLayout = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  useScrollToTop();
 
   return (
     <div className="App min-h-screen bg-[#151515] text-white">

@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const Teamspace = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const navigate = useNavigate();
 
-  if (!isAuthenticated) {
-    navigate('/login');
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      navigate('/login', { replace: true });
+    }
+  }, [isAuthenticated, loading, navigate]);
+
+  // Don't render anything until we know auth status
+  if (loading || !isAuthenticated) {
     return null;
   }
 
