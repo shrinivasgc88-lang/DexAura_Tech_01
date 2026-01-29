@@ -4,6 +4,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { Toaster } from '@/components/ui/sonner';
 import Header from '@/components/Layout/Header';
 import Footer from '@/components/Layout/Footer';
+import AuthDiagnostic from '@/components/AuthDiagnostic';
 import { useScrollToTop } from '@/hooks/useScrollToTop';
 import '@/App.css';
 
@@ -83,6 +84,7 @@ const ConditionalLayout = () => {
       </main>
       {!isAdminRoute && <Footer />}
       <Toaster position="top-right" />
+      {process.env.NODE_ENV === 'development' && <AuthDiagnostic />}
     </div>
   );
 }

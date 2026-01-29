@@ -10,20 +10,15 @@ const LaserCutting = () => {
   const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-[#151515]">
-      {/* Back Button */}
-      <div className="bg-[#0d0d0d] border-b border-[#301B3F]/30 sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Button
-            onClick={() => navigate('/capabilities/sheet-metals')}
-            variant="ghost"
-            className="text-gray-300 hover:text-white"
-            data-testid="back-btn"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-        </div>
-      </div>
+      {/* Floating circular back button (left-center) */}
+      <Button
+        onClick={() => navigate('/capabilities/sheet-metals')}
+        variant="ghost"
+        data-testid="back-btn"
+        className="fixed left-4 top-1/2 -translate-y-1/2 z-50 w-11 h-11 rounded-full bg-[#0d0d0d] border border-[#301B3F]/30 text-gray-300 hover:text-white flex items-center justify-center shadow-lg"
+      >
+        <ArrowLeft className="w-4 h-4" />
+      </Button>
 
       {/* Hero */}
       <section className="relative flex min-h-[100vh] flex-col items-center justify-center overflow-hidden px-6 py-8 text-center">

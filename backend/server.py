@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Depends, Header
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Depends, Header, Body
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -83,83 +83,205 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
 # ===== AUTH ROUTES =====
 @api_router.post("/auth/register")
 async def register(customer_data: CustomerCreate):
-    # Check if user exists
-    existing = await db.customers.find_one({"email": customer_data.email})
+    """
+    CRITICAL SECURITY ENDPOINT - Register new user with email/password
+    Must validate all inputs and ensure password is hashed
+    """
+    print(f"\n{'='*70}")
+    print(f"[REGISTER] Email: {customer_data.email}")
+    print(f"[REGISTER] Name: {customer_data.name}")
+    
+    # STEP 1: Validate inputs
+    if not customer_data.email or '@' not in customer_data.email:
+        print(f"[REGISTER] ✗ REJECTED: Invalid email")
+        print(f"{'='*70}\n")
+        raise HTTPException(status_code=400, detail="Invalid email address")
+    
+    if not customer_data.name or len(customer_data.name.strip()) == 0:
+        print(f"[REGISTER] ✗ REJECTED: Name required")
+        print(f"{'='*70}\n")
+        raise HTTPException(status_code=400, detail="Name is required")
+    
+    if not customer_data.password or len(customer_data.password) < 6:
+        print(f"[REGISTER] ✗ REJECTED: Password too short")
+        print(f"{'='*70}\n")
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+    
+    # STEP 2: Check if user already exists
+    existing = await db.customers.find_one({"email": customer_data.email.lower()})
     if existing:
+        print(f"[REGISTER] ✗ REJECTED: Email already registered")
+        print(f"{'='*70}\n")
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    # Create customer
-    customer_dict = customer_data.model_dump()
-    if customer_data.password:
-        customer_dict["password_hash"] = get_password_hash(customer_data.password)
-        del customer_dict["password"]
+    # STEP 3: Hash password
+    try:
+        password_hash = get_password_hash(customer_data.password)
+        print(f"[REGISTER] ✓ Password hashed successfully")
+    except Exception as e:
+        print(f"[REGISTER] ✗ PASSWORD HASHING ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        print(f"{'='*70}\n")
+        raise HTTPException(status_code=500, detail="Error processing password")
     
-    customer_obj = Customer(**customer_dict)
-    doc = customer_obj.model_dump()
-    doc['created_at'] = doc['created_at'].isoformat()
+    # STEP 4: Create customer object
+    customer_dict = {
+        "id": str(uuid.uuid4()),
+        "email": customer_data.email.lower(),
+        "name": customer_data.name.strip(),
+        "password_hash": password_hash,
+        "company": customer_data.company or None,
+        "phone": customer_data.phone or None,
+        "role": "BUYER",
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
     
-    await db.customers.insert_one(doc)
+    # STEP 5: Insert into database
+    try:
+        result = await db.customers.insert_one(customer_dict)
+        print(f"[REGISTER] ✓ User created in database")
+    except Exception as e:
+        print(f"[REGISTER] ✗ DATABASE ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        print(f"[REGISTER] Customer dict: {customer_dict}")
+        print(f"{'='*70}\n")
+        raise HTTPException(status_code=500, detail="Error creating user")
     
-    # Create token
-    token = create_access_token({"sub": customer_obj.id, "email": customer_obj.email})
+    # STEP 6: Create token
+    token = create_access_token({"sub": customer_dict["id"], "email": customer_dict["email"]})
+    print(f"[REGISTER] ✓ Token created")
+    
+    # STEP 7: Prepare response (remove password_hash and handle ObjectId)
+    response_customer = {}
+    for k, v in customer_dict.items():
+        if k != "password_hash":
+            # Convert ObjectId to string
+            if hasattr(v, '__str__') and type(v).__name__ == 'ObjectId':
+                response_customer[k] = str(v)
+            elif isinstance(v, dict) and '_id' in v:
+                response_customer[k] = {mk: str(mv) if type(mv).__name__ == 'ObjectId' else mv for mk, mv in v.items()}
+            else:
+                response_customer[k] = v
+    
+    print(f"[REGISTER] ✓ Registration successful for: {response_customer['email']}")
+    print(f"{'='*70}\n")
     
     return {
-        "customer": customer_obj,
+        "customer": response_customer,
         "access_token": token,
         "token_type": "bearer"
     }
 
 @api_router.post("/auth/login")
 async def login(credentials: CustomerLogin):
-    user = await db.customers.find_one({"email": credentials.email}, {"_id": 0})
+    """
+    CRITICAL SECURITY ENDPOINT - Must ALWAYS check database
+    Any user without valid credentials MUST be rejected with 401
+    """
+    print(f"\n{'='*70}")
+    print(f"[LOGIN] ╔═══════════════════════════════════════════════════════╗")
+    print(f"[LOGIN] ║  AUTHENTICATION ATTEMPT - STRICT VALIDATION MODE       ║")
+    print(f"[LOGIN] ╚═══════════════════════════════════════════════════════╝")
+    print(f"[LOGIN] Email: {credentials.email}")
+    print(f"[LOGIN] Password: [PROVIDED - will verify below]")
     
-    if not user or not user.get("password_hash"):
+    # STEP 1: Validate input format
+    print(f"[LOGIN] \n[STEP 1] Validating input...")
+    if not credentials.email or not credentials.password:
+        print(f"[LOGIN]   ✗ VALIDATION FAILED: Missing email or password")
+        print(f"[LOGIN] {'='*70}\n")
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    if not verify_password(credentials.password, user["password_hash"]):
+    print(f"[LOGIN]   ✓ Email and password fields present")
+    
+    # STEP 2: Query database for user
+    print(f"[LOGIN] \n[STEP 2] Querying database for user...")
+    print(f"[LOGIN]   Looking for: {credentials.email}")
+    try:
+        user = await db.customers.find_one({"email": credentials.email.lower()}, {"_id": 0})
+        print(f"[LOGIN]   Database query completed")
+    except Exception as e:
+        print(f"[LOGIN]   ✗ DATABASE ERROR: {e}")
+        print(f"[LOGIN] {'='*70}\n")
+        raise HTTPException(status_code=500, detail="Database error")
+    
+    # STEP 3: Check if user exists
+    print(f"[LOGIN] \n[STEP 3] Checking if user exists...")
+    if user is None:
+        print(f"[LOGIN]   ✗ REJECTED: Email '{credentials.email}' NOT FOUND in database")
+        print(f"[LOGIN]   No user with this email exists!")
+        print(f"[LOGIN] {'='*70}\n")
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    print(f"[LOGIN]   ✓ User found: {user.get('email')} (Name: {user.get('name')})")
+    
+    # STEP 4: Check if password_hash exists
+    print(f"[LOGIN] \n[STEP 4] Checking password hash...")
+    password_hash = user.get("password_hash")
+    if not password_hash:
+        print(f"[LOGIN]   ✗ REJECTED: User has NO password hash stored!")
+        print(f"[LOGIN]   This user cannot authenticate with password")
+        print(f"[LOGIN] {'='*70}\n")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    print(f"[LOGIN]   ✓ Password hash exists (length: {len(password_hash)} chars)")
+    
+    # STEP 5: Verify password
+    print(f"[LOGIN] \n[STEP 5] Verifying password...")
+    print(f"[LOGIN]   Comparing provided password against stored hash...")
+    try:
+        password_valid = verify_password(credentials.password, password_hash)
+        print(f"[LOGIN]   Verification result: {password_valid}")
+    except Exception as e:
+        print(f"[LOGIN]   ✗ PASSWORD VERIFICATION ERROR: {e}")
+        print(f"[LOGIN] {'='*70}\n")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    if not password_valid:
+        print(f"[LOGIN]   ✗ REJECTED: Password DOES NOT MATCH!")
+        print(f"[LOGIN]   The provided password is INCORRECT for this user")
+        print(f"[LOGIN] {'='*70}\n")
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    print(f"[LOGIN]   ✓ Password verification SUCCESSFUL")
+    
+    # STEP 6: Check if user is active
+    print(f"[LOGIN] \n[STEP 6] Checking user status...")
+    is_active = user.get("is_active", True)
+    print(f"[LOGIN]   User active status: {is_active}")
+    if not is_active:
+        print(f"[LOGIN]   ✗ REJECTED: User account is INACTIVE")
+        print(f"[LOGIN] {'='*70}\n")
+        raise HTTPException(status_code=401, detail="Account is inactive")
+    
+    print(f"[LOGIN]   ✓ User account is ACTIVE")
+    
+    # STEP 7: Create token - ONLY after ALL checks pass
+    print(f"[LOGIN] \n[STEP 7] Creating authentication token...")
     token = create_access_token({"sub": user["id"], "email": user["email"]})
+    print(f"[LOGIN]   ✓ Token created successfully")
     
-    # Return user data without password_hash
+    # STEP 8: Prepare response
+    print(f"[LOGIN] \n[STEP 8] Preparing response...")
     customer_data = {k: v for k, v in user.items() if k != "password_hash"}
+    
+    # Convert datetime to ISO string
+    if customer_data.get('created_at') and not isinstance(customer_data['created_at'], str):
+        customer_data['created_at'] = customer_data['created_at'].isoformat()
+    
+    print(f"[LOGIN] \n[LOGIN] ╔═══════════════════════════════════════════════════════╗")
+    print(f"[LOGIN] ║  ✓ AUTHENTICATION SUCCESSFUL - USER AUTHENTICATED            ║")
+    print(f"[LOGIN] ╚═══════════════════════════════════════════════════════╝")
+    print(f"[LOGIN] Email: {customer_data.get('email')}")
+    print(f"[LOGIN] Name:  {customer_data.get('name')}")
+    print(f"[LOGIN] Token will expire in 7 days")
+    print(f"[LOGIN] {'='*70}\n")
     
     return {
         "customer": customer_data,
-        "access_token": token,
-        "token_type": "bearer"
-    }
-
-@api_router.post("/auth/google")
-async def google_auth(google_token: dict):
-    google_id = google_token.get("google_id")
-    email = google_token.get("email")
-    name = google_token.get("name")
-    
-    if not google_id or not email:
-        raise HTTPException(status_code=400, detail="Invalid Google token")
-    
-    # Check if user exists
-    user = await db.customers.find_one({"google_id": google_id}, {"_id": 0})
-    
-    if not user:
-        # Create new user
-        customer_data = CustomerCreate(
-            email=email,
-            name=name,
-            google_id=google_id
-        )
-        customer_dict = customer_data.model_dump()
-        customer_obj = Customer(**customer_dict)
-        doc = customer_obj.model_dump()
-        doc['created_at'] = doc['created_at'].isoformat()
-        await db.customers.insert_one(doc)
-        user = doc
-    
-    token = create_access_token({"sub": user["id"], "email": user["email"]})
-    
-    return {
-        "customer": Customer(**user),
         "access_token": token,
         "token_type": "bearer"
     }
@@ -530,6 +652,42 @@ async def get_all_customers(
     customers = await db.customers.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
     
     return {"total": total, "customers": customers}
+
+@api_router.put("/admin/customers/{customer_id}/role")
+async def update_customer_role(
+    customer_id: str,
+    role: str = Body(..., embed=True),
+    current_user: Customer = Depends(get_current_user)
+):
+    """Update a customer's role - admin only"""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Validate role
+    valid_roles = [e.value for e in UserRole]
+    if role not in valid_roles:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid role. Must be one of: {', '.join(valid_roles)}"
+        )
+    
+    # Don't allow changing your own role
+    if customer_id == current_user.id:
+        raise HTTPException(
+            status_code=400, 
+            detail="You cannot change your own role"
+        )
+    
+    # Update the role
+    result = await db.customers.update_one(
+        {"id": customer_id},
+        {"$set": {"role": role}}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    return {"message": f"Customer role updated to {role}", "customer_id": customer_id, "role": role}
 
 @api_router.get("/admin/orders")
 async def get_all_orders(
@@ -1107,6 +1265,37 @@ async def lifespan(app: FastAPI):
 
 # Create the main app with lifespan
 app = FastAPI(lifespan=lifespan)
+
+# Custom exception handler for unhandled exceptions
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    """Handle any unhandled exceptions"""
+    print(f"\n{'='*70}")
+    print(f"[ERROR] UNHANDLED EXCEPTION")
+    print(f"[ERROR] Type: {type(exc).__name__}")
+    print(f"[ERROR] Message: {str(exc)}")
+    import traceback
+    traceback.print_exc()
+    print(f"{'='*70}\n")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {str(exc)}"}
+    )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    """Handle Pydantic validation errors"""
+    print(f"\n{'='*70}")
+    print(f"[ERROR] VALIDATION ERROR")
+    print(f"[ERROR] Details: {exc.errors()}")
+    print(f"{'='*70}\n")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()}
+    )
 
 # Include the router in the main app
 app.include_router(api_router)

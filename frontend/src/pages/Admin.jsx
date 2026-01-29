@@ -12,6 +12,7 @@ import LeadsModule from '@/components/admin/LeadsModule';
 import ProjectsModule from '@/components/admin/ProjectsModule';
 import SuppliersModule from '@/components/admin/SuppliersModule';
 import AssignmentsModule from '@/components/admin/AssignmentsModule';
+import UsersModule from '@/components/admin/UsersModule';
 
 const Admin = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -20,13 +21,13 @@ const Admin = () => {
   const [newContactsCount, setNewContactsCount] = useState(0);
 
   React.useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'Admin') {
+    if (!isAuthenticated || user?.role !== 'ADMIN') {
       navigate('/login');
     }
   }, [isAuthenticated, user, navigate]);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === 'Admin') {
+    if (isAuthenticated && user?.role === 'ADMIN') {
       fetchNewContactsCount();
       // Poll for new contacts every 30 seconds
       const interval = setInterval(fetchNewContactsCount, 30000);
@@ -51,7 +52,7 @@ const Admin = () => {
     navigate('/login');
   };
 
-  if (!isAuthenticated || user?.role !== 'Admin') {
+  if (!isAuthenticated || user?.role !== 'ADMIN') {
     return null;
   }
 
@@ -120,7 +121,10 @@ const Admin = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 mb-8 bg-[#1a1a1a] p-1">
+          <TabsList className="grid w-full grid-cols-4 gap-2 mb-8 bg-[#1a1a1a] p-1 h-auto">
+            <TabsTrigger value="users" className="data-[state=active]:bg-[#910A67]">
+              Users
+            </TabsTrigger>
             <TabsTrigger value="contacts" className="data-[state=active]:bg-[#910A67]">
               Contacts
             </TabsTrigger>
@@ -140,6 +144,10 @@ const Admin = () => {
               Blog
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="users">
+            <UsersModule />
+          </TabsContent>
 
           <TabsContent value="contacts">
             <ContactsModule />

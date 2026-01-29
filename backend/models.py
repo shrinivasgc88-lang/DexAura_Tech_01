@@ -5,10 +5,10 @@ import uuid
 from enum import Enum
 
 class UserRole(str, Enum):
-    OWNER = "Owner"
-    BUYER = "Buyer"
-    VIEWER = "Viewer"
-    ADMIN = "Admin"
+    OWNER = "OWNER"
+    BUYER = "BUYER"
+    VIEWER = "VIEWER"
+    ADMIN = "ADMIN"
 
 class OrderStatus(str, Enum):
     NEW = "New"
@@ -164,6 +164,7 @@ class ContactSubmission(BaseModel):
     name: str
     email: EmailStr
     phone: Optional[str] = None
+    country: Optional[str] = None  # Country code (e.g., 'US', 'IN', 'GB')
     company: Optional[str] = None
     monthly_volume: Optional[str] = None
     message: str

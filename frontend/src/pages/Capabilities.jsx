@@ -101,6 +101,9 @@ import printingVideo from '@/assects/Videos/3D_printing.mp4';
 import specialProcessVideo from '@/assects/Videos/special_process.mp4';
 import cncImage from '@/assects/Images/cnc_m08.jpg';
 import sheetMetalImage from '@/assects/Images/Sheet_Metal.jpg';
+import online_quot_dfm from '@/assects/Images/online_quot_dfm.png';
+import materials from '@/assects/Images/materials.png';
+import digital_quote from '@/assects/Images/digital_quote.png';
 import printingImage from '@/assects/Images/3D_Printing.jpg';
 import specialProcessImage from '@/assects/Images/Special_process.jpg';
 
@@ -374,21 +377,21 @@ const Capabilities = () => {
           <section className="space-y-10 text-sm text-gray-200 max-w-6xl mx-auto">
             {/* Card 1 - text left, image right */}
             <article className="grid gap-6 md:grid-cols-2 items-center">
-              <div className="rounded-2xl bg-[#1a1a1a] border border-[#301B3F]/40 p-6 space-y-2">
+              <div className="rounded-2xl bg-[#1a1a1a] border border-[#301B3F]/40 px-6 py-10 space-y-2">
                 <h3 className="text-white font-semibold text-base">Online Quoting &amp; DFM Analysis</h3>
                 <p>
                   DexAura combines online quoting with automated design
                   for manufacturability checks. Send your CAD model, configure quantities and turn times, and review
                   manufacturability advisories before you commit to an order.
                 </p>
-                <p className="text-gray-400">
+                {/* <p className="text-gray-400">
                   This helps catch issues early—such as thin walls, challenging tolerances, or hardware placement—so you
                   can refine designs while keeping lead times short.
-                </p>
+                </p> */}
               </div>
-              <div className="h-56 w-full overflow-hidden rounded-2xl border border-[#301B3F]/40 bg-black/40">
+              <div className="h-65 w-full overflow-hidden rounded-2xl border border-[#301B3F]/40 bg-black/40">
                 <img
-                  src={cncImage}
+                  src={online_quot_dfm}
                   alt="Digital CNC machining quote visualization"
                   className="h-full w-full object-cover"
                   loading="lazy"
@@ -400,44 +403,44 @@ const Capabilities = () => {
             <article className="grid gap-6 md:grid-cols-2 items-center">
               <div className="h-56 w-full overflow-hidden rounded-2xl border border-[#301B3F]/40 bg-black/40">
                 <img
-                  src={sheetMetalImage}
+                  src={materials}
                   alt="Assorted manufacturing materials for CNC and sheet metal"
-                  className="h-full w-full object-cover"
+                  className="h-65 w-full object-cover"
                   loading="lazy"
                 />
               </div>
-              <div className="rounded-2xl bg-[#1a1a1a] border border-[#301B3F]/40 p-6 space-y-2">
+              <div className="rounded-2xl bg-[#1a1a1a] border border-[#301B3F]/40 px-6 py-14 space-y-2">
                 <h3 className="text-white font-semibold text-base">Manufacturing Materials</h3>
                 <p>
                   We support a broad range of metals and plastics similar to leading manufacturers. This includes
                   aluminum, steels, stainless, copper alloys, and common engineering plastics for machining.
                 </p>
-                <p className="text-gray-400">
+                {/* <p className="text-gray-400">
                   Choosing the right material for each stage—prototype, validation, and production—helps balance
                   performance, cost, and lead time without changing your design intent.
-                </p>
+                </p> */}
               </div>
             </article>
 
             {/* Card 3 - text left, image right */}
             <article className="grid gap-6 md:grid-cols-2 items-center">
-              <div className="rounded-2xl bg-[#1a1a1a] border border-[#301B3F]/40 p-6 space-y-2">
+              <div className="rounded-2xl bg-[#1a1a1a] border border-[#301B3F]/40 px-6 py-14 space-y-2 ">
                 <h3 className="text-white font-semibold text-base">What&apos;s in a Digital Quote?</h3>
                 <p>
                   Digital quotes typically include interactive pricing by quantity and lead time, visual DFM feedback,
                   and options for finishes, inspection, and certifications—similar to the sample quotes showcased for 
                   CNC, molding, and 3D printing.
                 </p>
-                <p className="text-gray-400">
+                {/* <p className="text-gray-400">
                   At DexAura, our goal is to give you the same clarity: clear pricing, lead‑time windows, and
                   configuration choices so you can make fast, informed sourcing decisions.
-                </p>
+                </p> */}
               </div>
-              <div className="h-56 w-full overflow-hidden rounded-2xl border border-[#301B3F]/40 bg-black/40">
+              <div className="h-65 w-full overflow-hidden rounded-2xl border border-[#301B3F]/40 bg-black/40">
                 <img
-                  src={specialProcessImage}
+                  src={digital_quote}
                   alt="Example of digital manufacturing quote summary"
-                  className="h-full w-full object-cover"
+                  className="h-60 w-full object-cover"
                   loading="lazy"
                 />
               </div>

@@ -23,20 +23,15 @@ const SheetMetals = () => {
 
   return (
     <div className="min-h-screen bg-[#151515]">
-      {/* Back Button */}
-            <div className="bg-[#0d0d0d] border-b border-[#301B3F]/30 sticky top-0 z-50">
-              <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                <Button
-                  onClick={() => navigate('/capabilities')}
-                  variant="ghost"
-                  className="text-gray-300 hover:text-white"
-                  data-testid="back-btn"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Button>
-              </div>
-            </div>
+      {/* Floating circular back button (left-center) */}
+      <Button
+        onClick={() => navigate('/capabilities')}
+        variant="ghost"
+        data-testid="back-btn"
+        className="fixed left-10 top-1/2 -translate-y-1/2 z-50 w-16 h-16 rounded-full bg-[#0d0d0d] border-2 border-[#301B3F]/30 text-gray-300 hover:bg-[#720455] hover:border-transparent hover:text-white flex items-center justify-center shadow-2xl transition-all duration-300"
+      >
+        <ArrowLeft className="w-10 h-10" />
+      </Button>
       {/* Hero with slideshow background */}
       <section className="relative min-h-[100vh] flex items-center overflow-hidden px-6 py-8 text-center">
         <div className="absolute inset-0">
@@ -90,110 +85,106 @@ const SheetMetals = () => {
 
           <div className="grid gap-8 md:grid-cols-2">
             {/* Laser Cutting */}
-            <article className="flex flex-col overflow-hidden rounded-3xl bg-[#1a1a1a] border border-[#301B3F]/40 shadow-xl shadow-black/40">
-              <div className="h-56 w-full overflow-hidden bg-black/40">
-                <img
-                  src={sheetHero}
-                  alt="Laser cutting"
-                  className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-              <div className="flex flex-1 flex-col gap-3 px-8 py-8 text-left">
-                <h3 className="text-xl font-semibold text-white">Laser Cutting</h3>
-                <p className="text-sm text-gray-300">
-                  High-powered lasers cut precise profiles and internal features in flat sheet metal with minimal
-                  heat-affected zones, ideal for brackets, panels, and covers.
+            <article className="group relative overflow-hidden rounded-3xl border border-[#301B3F]/40 shadow-xl shadow-black/40 h-80 hover:border-[#720455] transition-all duration-300 hover:shadow-xl hover:shadow-[#720455]/20 cursor-pointer" onClick={() => navigate('/capabilities/sheet-metals/laser-cutting')}>
+              <img
+                src={sheetHero}
+                alt="Laser cutting"
+                className="absolute inset-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/80 pointer-events-none" />
+              <div className="relative z-10 h-full flex flex-col items-center justify-center gap-4 px-8 py-8 text-center">
+                <h3 className="text-2xl font-bold text-white">Laser Cutting</h3>
+                <p className="text-gray-300 max-w-xs leading-relaxed">
+                  High-powered lasers cut precise profiles and internal features in flat sheet metal with minimal heat-affected zones.
                 </p>
-                <div className="mt-2">
-                  <Button
-                    className="bg-gradient-to-r from-[#720455] to-[#910A67] hover:from-[#910A67] hover:to-[#720455] text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-lg shadow-[#720455]/30"
-                    onClick={() => navigate('/capabilities/sheet-metals/laser-cutting')}
-                  >
-                    Learn More
-                  </Button>
-                </div>
+                <Button
+                  className="bg-gradient-to-r from-[#720455] to-[#910A67] hover:from-[#910A67] hover:to-[#720455] text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-lg shadow-[#720455]/30"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/capabilities/sheet-metals/laser-cutting');
+                  }}
+                >
+                  Learn More
+                </Button>
               </div>
             </article>
 
             {/* Forming and Bending */}
-            <article className="flex flex-col overflow-hidden rounded-3xl bg-[#1a1a1a] border border-[#301B3F]/40 shadow-xl shadow-black/40">
-              <div className="h-56 w-full overflow-hidden bg-black/40">
-                <img
-                  src={sheetProcess}
-                  alt="Forming and bending"
-                  className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-              <div className="flex flex-1 flex-col gap-3 px-8 py-8 text-left">
-                <h3 className="text-xl font-semibold text-white">Forming and Bending</h3>
-                <p className="text-sm text-gray-300">
-                  Press brakes form flat blanks into channels, brackets, and enclosures with controlled bend radii and
-                  sequencing for consistent, repeatable geometry.
+            <article className="group relative overflow-hidden rounded-3xl border border-[#301B3F]/40 shadow-xl shadow-black/40 h-80 hover:border-[#720455] transition-all duration-300 hover:shadow-xl hover:shadow-[#720455]/20 cursor-pointer" onClick={() => navigate('/capabilities/sheet-metals/forming-bending')}>
+              <img
+                src={sheetProcess}
+                alt="Forming and bending"
+                className="absolute inset-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/80 pointer-events-none" />
+              <div className="relative z-10 h-full flex flex-col items-center justify-center gap-4 px-8 py-8 text-center">
+                <h3 className="text-2xl font-bold text-white">Forming and Bending</h3>
+                <p className="text-gray-300 max-w-xs leading-relaxed">
+                  Press brakes form flat blanks into channels, brackets, and enclosures with controlled bend radii and sequencing.
                 </p>
-                <div className="mt-2">
-                  <Button
-                    className="bg-gradient-to-r from-[#720455] to-[#910A67] hover:from-[#910A67] hover:to-[#720455] text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-lg shadow-[#720455]/30"
-                    onClick={() => navigate('/capabilities/sheet-metals/forming-bending')}
-                  >
-                    Learn More
-                  </Button>
-                </div>
+                <Button
+                  className="bg-gradient-to-r from-[#720455] to-[#910A67] hover:from-[#910A67] hover:to-[#720455] text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-lg shadow-[#720455]/30"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/capabilities/sheet-metals/forming-bending');
+                  }}
+                >
+                  Learn More
+                </Button>
               </div>
             </article>
 
             {/* Punching */}
-            <article className="flex flex-col overflow-hidden rounded-3xl bg-[#1a1a1a] border border-[#301B3F]/40 shadow-xl shadow-black/40">
-              <div className="h-56 w-full overflow-hidden bg-black/40">
-                <img
-                  src={sheetDetail}
-                  alt="Punching"
-                  className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-              <div className="flex flex-1 flex-col gap-3 px-8 py-8 text-left">
-                <h3 className="text-xl font-semibold text-white">Punching</h3>
-                <p className="text-sm text-gray-300">
-                  Punch presses combine tooling and dies to cut profiles, louvers, and formed features efficiently,
-                  supporting patterns of holes, slots, and embosses.
+            <article className="group relative overflow-hidden rounded-3xl border border-[#301B3F]/40 shadow-xl shadow-black/40 h-80 hover:border-[#720455] transition-all duration-300 hover:shadow-xl hover:shadow-[#720455]/20 cursor-pointer" onClick={() => navigate('/capabilities/sheet-metals/punching')}>
+              <img
+                src={sheetDetail}
+                alt="Punching"
+                className="absolute inset-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/80 pointer-events-none" />
+              <div className="relative z-10 h-full flex flex-col items-center justify-center gap-4 px-8 py-8 text-center">
+                <h3 className="text-2xl font-bold text-white">Punching</h3>
+                <p className="text-gray-300 max-w-xs leading-relaxed">
+                  Punch presses combine tooling and dies to cut profiles, louvers, and formed features efficiently.
                 </p>
-                <div className="mt-2">
-                  <Button
-                    className="bg-gradient-to-r from-[#720455] to-[#910A67] hover:from-[#910A67] hover:to-[#720455] text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-lg shadow-[#720455]/30"
-                    onClick={() => navigate('/capabilities/sheet-metals/punching')}
-                  >
-                    Learn More
-                  </Button>
-                </div>
+                <Button
+                  className="bg-gradient-to-r from-[#720455] to-[#910A67] hover:from-[#910A67] hover:to-[#720455] text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-lg shadow-[#720455]/30"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/capabilities/sheet-metals/punching');
+                  }}
+                >
+                  Learn More
+                </Button>
               </div>
             </article>
 
             {/* Fabricated Assemblies */}
-            <article className="flex flex-col overflow-hidden rounded-3xl bg-[#1a1a1a] border border-[#301B3F]/40 shadow-xl shadow-black/40">
-              <div className="h-56 w-full overflow-hidden bg-black/40">
-                <img
-                  src={sheetProcess}
-                  alt="Fabricated assemblies"
-                  className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-              <div className="flex flex-1 flex-col gap-3 px-8 py-8 text-left">
-                <h3 className="text-xl font-semibold text-white">Fabricated Assemblies</h3>
-                <p className="text-sm text-gray-300">
-                  Welded and fastened assemblies bring multiple sheet metal components together into finished chassis,
-                  enclosures, and frames with optional powder coat and plating.
+            <article className="group relative overflow-hidden rounded-3xl border border-[#301B3F]/40 shadow-xl shadow-black/40 h-80 hover:border-[#720455] transition-all duration-300 hover:shadow-xl hover:shadow-[#720455]/20 cursor-pointer" onClick={() => navigate('/capabilities/sheet-metals/fabricated-assemblies')}>
+              <img
+                src={sheetProcess}
+                alt="Fabricated assemblies"
+                className="absolute inset-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/80 pointer-events-none" />
+              <div className="relative z-10 h-full flex flex-col items-center justify-center gap-4 px-8 py-8 text-center">
+                <h3 className="text-2xl font-bold text-white">Fabricated Assemblies</h3>
+                <p className="text-gray-300 max-w-xs leading-relaxed">
+                  Welded and fastened assemblies bring multiple sheet metal components together into finished chassis and enclosures.
                 </p>
-                <div className="mt-2">
-                  <Button
-                    className="bg-gradient-to-r from-[#720455] to-[#910A67] hover:from-[#910A67] hover:to-[#720455] text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-lg shadow-[#720455]/30"
-                    onClick={() => navigate('/capabilities/sheet-metals/fabricated-assemblies')}
-                  >
-                    Learn More
-                  </Button>
-                </div>
+                <Button
+                  className="bg-gradient-to-r from-[#720455] to-[#910A67] hover:from-[#910A67] hover:to-[#720455] text-white px-6 py-2.5 rounded-full text-sm font-medium shadow-lg shadow-[#720455]/30"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/capabilities/sheet-metals/fabricated-assemblies');
+                  }}
+                >
+                  Learn More
+                </Button>
               </div>
             </article>
           </div>

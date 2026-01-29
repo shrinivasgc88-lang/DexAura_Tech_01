@@ -569,20 +569,15 @@ const CNCMachining = () => {
 
   return (
     <div className="min-h-screen bg-[#151515]">
-     {/* Back Button */}
-      <div className="bg-[#0d0d0d] border-b border-[#301B3F]/30 sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Button
-            onClick={() => navigate('/capabilities')}
-            variant="ghost"
-            className="text-gray-300 hover:text-white"
-            data-testid="back-btn"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-        </div>
-      </div>
+      {/* Floating circular back button (left-center) */}
+      <Button
+        onClick={() => navigate('/capabilities')}
+        variant="ghost"
+        data-testid="back-btn"
+        className="fixed left-10 top-1/2 -translate-y-1/2 z-50 w-16 h-16 rounded-full bg-[#0d0d0d] border-2 border-[#301B3F]/30 text-gray-300 hover:bg-[#720455] hover:border-transparent hover:text-white flex items-center justify-center shadow-2xl transition-all duration-300"
+      >
+        <ArrowLeft className="w-10 h-10" />
+      </Button>
 
       {/* Full-screen header / hero with background slideshow */}
       <section className="relative min-h-[100vh] flex items-center overflow-hidden">
@@ -611,7 +606,7 @@ const CNCMachining = () => {
               CNC Machining Services
             </h1>
             <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-              Fast-turn prototypes and production parts in as little as one day, supported by digital quoting,
+              Fast-turn prototypes and production parts in as little as one day, supported  by digital quoting,
               manufacturability analysis, and a vetted supplier network for tighter tolerances and finishing options.
             </p>
           </header>
@@ -620,28 +615,30 @@ const CNCMachining = () => {
 
       {/* Main content below hero */}
       <div className="container mx-auto px-4 max-w-6xl space-y-12 pb-10">
-        {/* Service cards instead of tabs */}
+        {/* Service cards with background images */}
         <section className="space-y-8 py-10">
           <h2 className="text-3xl font-semibold text-white text-center">Choose a CNC Service</h2>
           <div className="grid gap-8 md:grid-cols-2">
             {/* CNC Milling card */}
-            <article className="flex flex-col overflow-hidden rounded-3xl bg-[#1a1a1a] border border-[#301B3F]/40 shadow-xl shadow-black/40">
-              <div className="h-64 w-full overflow-hidden bg-black/40">
-                <img
-                  src={millingImage}
-                  alt="CNC Milling"
-                  className="h-full w-full object-contain transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-              <div className="flex flex-1 flex-col items-center gap-3 px-8 py-8 text-center">
-                <h3 className="text-xl font-semibold text-white">CNC Milling</h3>
-                <p className="text-sm text-gray-300 max-w-xs">
+            <article className="group relative overflow-hidden rounded-3xl border border-[#301B3F]/40 shadow-xl shadow-black/40 h-80 hover:border-[#720455] transition-all duration-300 hover:shadow-xl hover:shadow-[#720455]/20 cursor-pointer" onClick={() => navigate('/capabilities/cnc-milling')}>
+              <img
+                src={millingImage}
+                alt="CNC Milling"
+                className="absolute inset-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/80 pointer-events-none" />
+              <div className="relative z-10 h-full flex flex-col items-center justify-center gap-4 px-8 py-8 text-center">
+                <h3 className="text-2xl font-bold text-white">CNC Milling</h3>
+                <p className="text-gray-300 max-w-xs leading-relaxed">
                   Digital CNC milling for prototypes and production parts in metals and engineering plastics.
                 </p>
                 <button
                   type="button"
-                  onClick={() => navigate('/capabilities/cnc-milling')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/capabilities/cnc-milling');
+                  }}
                   className="bg-gradient-to-r from-[#720455] to-[#910A67] hover:from-[#910A67] hover:to-[#720455] text-white px-6 py-2.5 rounded-full font-medium shadow-lg shadow-[#720455]/30"
                 >
                   Learn More
@@ -650,23 +647,25 @@ const CNCMachining = () => {
             </article>
 
             {/* CNC Turning card */}
-            <article className="flex flex-col overflow-hidden rounded-3xl bg-[#1a1a1a] border border-[#301B3F]/40 shadow-xl shadow-black/40">
-              <div className="h-64 w-full overflow-hidden bg-black/40">
-                <img
-                  src={turningImage}
-                  alt="CNC Turning"
-                  className="h-full w-full object-contain transition-transform duration-500 hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-              <div className="flex flex-1 flex-col items-center gap-3 px-8 py-8 text-center">
-                <h3 className="text-xl font-semibold text-white">CNC Turning</h3>
-                <p className="text-sm text-gray-300 max-w-xs">
+            <article className="group relative overflow-hidden rounded-3xl border border-[#301B3F]/40 shadow-xl shadow-black/40 h-80 hover:border-[#720455] transition-all duration-300 hover:shadow-xl hover:shadow-[#720455]/20 cursor-pointer" onClick={() => navigate('/capabilities/cnc-turning')}>
+              <img
+                src={turningImage}
+                alt="CNC Turning"
+                className="absolute inset-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/80 pointer-events-none" />
+              <div className="relative z-10 h-full flex flex-col items-center justify-center gap-4 px-8 py-8 text-center">
+                <h3 className="text-2xl font-bold text-white">CNC Turning</h3>
+                <p className="text-gray-300 max-w-xs leading-relaxed">
                   CNC turning with live tooling for precise cylindrical parts and complex features.
                 </p>
                 <button
                   type="button"
-                  onClick={() => navigate('/capabilities/cnc-turning')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/capabilities/cnc-turning');
+                  }}
                   className="bg-gradient-to-r from-[#720455] to-[#910A67] hover:from-[#910A67] hover:to-[#720455] text-white px-6 py-2.5 rounded-full font-medium shadow-lg shadow-[#720455]/30"
                 >
                   Learn More

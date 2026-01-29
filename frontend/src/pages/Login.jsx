@@ -1,131 +1,148 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, register, googleLogin } = useAuth();
+  const { login, register } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [registerData, setRegisterData] = useState({
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     company: '',
     phone: ''
   });
 
-  // Load Google Sign-In script
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
-
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
-
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    
+    // Validate inputs first
+    if (!loginData.email || !loginData.email.includes('@')) {
+      toast.error('Please enter a valid email address');
+      setLoading(false);
+      return;
+    }
+    
+    if (!loginData.password || loginData.password.length === 0) {
+      toast.error('Please enter your password');
+      setLoading(false);
+      return;
+    }
+    
+    console.log(`[LOGIN] ========================================`);
+    console.log(`[LOGIN] LOGIN FORM SUBMITTED`);
+    console.log(`[LOGIN] Email: ${loginData.email}`);
+    console.log(`[LOGIN] Password: [PROVIDED]`);
+    console.log(`[LOGIN] ========================================`);
+    
     try {
-      await login(loginData.email, loginData.password);
+      console.log('[LOGIN] Calling auth.login()...');
+      const result = await login(loginData.email, loginData.password);
+      console.log('[LOGIN] ✓ Login succeeded');
+      console.log('[LOGIN] Result:', result);
+      console.log('[LOGIN] User role:', result?.role);
       toast.success('Login successful!');
-      navigate('/teamspace');
+      
+      // Redirect based on user role
+      const redirectUrl = result?.role === 'ADMIN' ? '/admin' : '/teamspace';
+      console.log(`[LOGIN] Navigating to ${redirectUrl} (role: ${result?.role})`);
+      navigate(redirectUrl);
     } catch (error) {
-      console.error('Login error:', error);
-      const errorMessage = error.response?.data?.detail || error.message || 'Login failed';
+      console.error('[LOGIN] ✗ Login failed');
+      console.error('[LOGIN] Error:', error.message);
+      
+      let errorMessage = 'Login failed. Please try again.';
+      
+      if (error.response?.status === 401) {
+        errorMessage = 'Invalid email or password. Please check your credentials.';
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.message?.includes('timeout')) {
+        errorMessage = 'Login request timed out. Is the server running?';
+      } else if (error.message?.includes('ECONNREFUSED') || error.message?.includes('Network')) {
+        errorMessage = 'Cannot connect to server. Please make sure the backend is running.';
+      }
+      
+      console.error('[LOGIN] Showing error:', errorMessage);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
+      console.log('[LOGIN] ========================================');
     }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      await register(registerData);
-      toast.success('Registration successful!');
-      navigate('/teamspace');
-    } catch (error) {
-      console.error('Register error:', error);
-      const errorMessage = error.response?.data?.detail || error.message || 'Registration failed';
-      toast.error(errorMessage);
-    } finally {
+    
+    // Frontend validation
+    if (!registerData.name || registerData.name.trim().length === 0) {
+      toast.error('Please enter your full name');
       setLoading(false);
+      return;
     }
-  };
-
-  const handleGoogleLogin = async () => {
-    setLoading(true);
+    
+    if (!registerData.email || !registerData.email.includes('@')) {
+      toast.error('Please enter a valid email address');
+      setLoading(false);
+      return;
+    }
+    
+    if (!registerData.password || registerData.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
+    
+    if (registerData.password !== registerData.confirmPassword) {
+      toast.error('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+    
+    console.log(`[REGISTER] ========================================`);
+    console.log(`[REGISTER] REGISTER FORM SUBMITTED`);
+    console.log(`[REGISTER] Email: ${registerData.email}`);
+    console.log(`[REGISTER] Name: ${registerData.name}`);
+    console.log(`[REGISTER] ========================================`);
+    
     try {
-      // Initialize Google Sign-In
-      if (!window.google) {
-        throw new Error('Google Sign-In library not loaded');
-      }
-
-      // Use Google Sign-In
-      window.google.accounts.id.initialize({
-        client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
-        callback: handleGoogleResponse
+      const result = await register({
+        name: registerData.name,
+        email: registerData.email,
+        password: registerData.password,
+        company: registerData.company || null,
+        phone: registerData.phone || null
       });
-
-      // Trigger the Google Sign-In dialog
-      window.google.accounts.id.renderButton(
-        document.getElementById('google-signin-button'),
-        { theme: 'dark', size: 'large', width: '100%' }
-      );
-
-      document.getElementById('google-signin-button').click();
-    } catch (error) {
-      console.error('Google Sign-In error:', error);
-      toast.error('Google Sign-In not available. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleResponse = async (response) => {
-    setLoading(true);
-    try {
-      if (!response.credential) {
-        throw new Error('No credential received from Google');
-      }
-
-      // Decode the JWT token (Google returns a JWT)
-      const base64Url = response.credential.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
       
-      const googleData = JSON.parse(jsonPayload);
-
-      // Call the backend Google auth endpoint
-      await googleLogin({
-        google_id: googleData.sub,
-        email: googleData.email,
-        name: googleData.name,
-        picture: googleData.picture
-      });
-
-      toast.success('Login successful with Google!');
+      console.log('[REGISTER] ✓ Registration succeeded');
+      toast.success('Account created successfully!');
       navigate('/teamspace');
     } catch (error) {
-      console.error('Google authentication error:', error);
-      const errorMessage = error.response?.data?.detail || error.message || 'Google login failed';
+      console.error('[REGISTER] ✗ Registration failed');
+      console.error('[REGISTER] Error:', error.message);
+      
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (error.response?.status === 400) {
+        errorMessage = error.response.data?.detail || 'Invalid registration data';
+      } else if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      }
+      
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -134,15 +151,12 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-[#151515] flex items-center justify-center py-12 px-4">
-      {/* Hidden Google Sign-In button container */}
-      <div id="google-signin-button" style={{ display: 'none' }}></div>
-      
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             Welcome to DexAura
           </h1>
-          <p className="text-gray-400">Access your manufacturing workspace</p>
+          <p className="text-gray-400">Secure Manufacturing Workspace</p>
         </div>
 
         <div className="bg-[#1a1a1a] border border-[#301B3F]/30 rounded-2xl p-8">
@@ -152,26 +166,47 @@ const Login = () => {
               <TabsTrigger value="register" data-testid="register-tab">Register</TabsTrigger>
             </TabsList>
 
+            {/* ===== LOGIN TAB ===== */}
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4" data-testid="login-form">
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={loginData.email}
-                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                  required
-                  className="bg-[#151515] border-[#301B3F] text-white"
-                  data-testid="login-email"
-                />
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  required
-                  className="bg-[#151515] border-[#301B3F] text-white"
-                  data-testid="login-password"
-                />
+                <div>
+                  <label className="text-white text-sm mb-2 block">Email</label>
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={loginData.email}
+                    onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                    required
+                    className="bg-[#151515] border-[#301B3F] text-white"
+                    data-testid="login-email"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-white text-sm mb-2 block">Password</label>
+                  <div className="relative">
+                    <Input
+                      type={showLoginPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      value={loginData.password}
+                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                      required
+                      className="bg-[#151515] border-[#301B3F] text-white pr-10"
+                      data-testid="login-password"
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLoginPassword(!showLoginPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                      disabled={loading}
+                    >
+                      {showLoginPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
                 <Button
                   type="submit"
                   disabled={loading}
@@ -181,70 +216,111 @@ const Login = () => {
                   {loading ? 'Logging in...' : 'Login'}
                 </Button>
               </form>
-
-              <div className="mt-6">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-[#301B3F]"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-[#1a1a1a] text-gray-400">Or continue with</span>
-                  </div>
-                </div>
-                <Button
-                  onClick={handleGoogleLogin}
-                  variant="outline"
-                  className="w-full mt-4 border-[#301B3F] text-white hover:bg-[#301B3F]/20"
-                  data-testid="google-login-btn"
-                >
-                  Google
-                </Button>
-              </div>
             </TabsContent>
 
+            {/* ===== REGISTER TAB ===== */}
             <TabsContent value="register">
               <form onSubmit={handleRegister} className="space-y-4" data-testid="register-form">
-                <Input
-                  placeholder="Full Name"
-                  value={registerData.name}
-                  onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-                  required
-                  className="bg-[#151515] border-[#301B3F] text-white"
-                  data-testid="register-name"
-                />
-                <Input
-                  type="email"
-                  placeholder="Email"
-                  value={registerData.email}
-                  onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                  required
-                  className="bg-[#151515] border-[#301B3F] text-white"
-                  data-testid="register-email"
-                />
-                <Input
-                  placeholder="Company"
-                  value={registerData.company}
-                  onChange={(e) => setRegisterData({ ...registerData, company: e.target.value })}
-                  className="bg-[#151515] border-[#301B3F] text-white"
-                  data-testid="register-company"
-                />
-                <Input
-                  type="tel"
-                  placeholder="Phone"
-                  value={registerData.phone}
-                  onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
-                  className="bg-[#151515] border-[#301B3F] text-white"
-                  data-testid="register-phone"
-                />
-                <Input
-                  type="password"
-                  placeholder="Password"
-                  value={registerData.password}
-                  onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                  required
-                  className="bg-[#151515] border-[#301B3F] text-white"
-                  data-testid="register-password"
-                />
+                <div>
+                  <label className="text-white text-sm mb-2 block">Full Name</label>
+                  <Input
+                    placeholder="John Doe"
+                    value={registerData.name}
+                    onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                    required
+                    className="bg-[#151515] border-[#301B3F] text-white"
+                    data-testid="register-name"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-white text-sm mb-2 block">Email</label>
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={registerData.email}
+                    onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                    required
+                    className="bg-[#151515] border-[#301B3F] text-white"
+                    data-testid="register-email"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-white text-sm mb-2 block">Company (Optional)</label>
+                  <Input
+                    placeholder="Your Company"
+                    value={registerData.company}
+                    onChange={(e) => setRegisterData({ ...registerData, company: e.target.value })}
+                    className="bg-[#151515] border-[#301B3F] text-white"
+                    data-testid="register-company"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-white text-sm mb-2 block">Phone (Optional)</label>
+                  <Input
+                    type="tel"
+                    placeholder="+1 (555) 123-4567"
+                    value={registerData.phone}
+                    onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
+                    className="bg-[#151515] border-[#301B3F] text-white"
+                    data-testid="register-phone"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-white text-sm mb-2 block">Password</label>
+                  <div className="relative">
+                    <Input
+                      type={showRegisterPassword ? "text" : "password"}
+                      placeholder="At least 6 characters"
+                      value={registerData.password}
+                      onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                      required
+                      className="bg-[#151515] border-[#301B3F] text-white pr-10"
+                      data-testid="register-password"
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                      disabled={loading}
+                    >
+                      {showRegisterPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-white text-sm mb-2 block">Confirm Password</label>
+                  <div className="relative">
+                    <Input
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Re-enter your password"
+                      value={registerData.confirmPassword}
+                      onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
+                      required
+                      className="bg-[#151515] border-[#301B3F] text-white pr-10"
+                      data-testid="register-confirm-password"
+                      disabled={loading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                      disabled={loading}
+                    >
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
                 <Button
                   type="submit"
                   disabled={loading}
@@ -254,30 +330,13 @@ const Login = () => {
                   {loading ? 'Creating account...' : 'Create Account'}
                 </Button>
               </form>
-
-              <div className="mt-6">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-[#301B3F]"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-[#1a1a1a] text-gray-400">Or sign up with</span>
-                  </div>
-                </div>
-                <Button
-                  onClick={handleGoogleLogin}
-                  type="button"
-                  disabled={loading}
-                  variant="outline"
-                  className="w-full mt-4 border-[#301B3F] text-white hover:bg-[#301B3F]/20"
-                  data-testid="google-register-btn"
-                >
-                  {loading ? 'Connecting...' : 'Google'}
-                </Button>
-              </div>
             </TabsContent>
           </Tabs>
         </div>
+
+        <p className="text-center text-gray-500 text-sm mt-6">
+          All data is encrypted and secure
+        </p>
       </div>
     </div>
   );

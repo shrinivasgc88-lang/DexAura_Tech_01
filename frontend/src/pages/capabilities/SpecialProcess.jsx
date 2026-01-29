@@ -225,20 +225,15 @@ const SpecialProcess = () => {
 
   return (
     <div className="min-h-screen bg-[#151515] ">
-      {/* Back Button */}
-      <div className="bg-[#0d0d0d] border-b border-[#301B3F]/30 sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Button
-            onClick={() => navigate('/capabilities')}
-            variant="ghost"
-            className="text-gray-300 hover:text-white"
-            data-testid="back-btn"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-        </div>
-      </div>
+      {/* Floating circular back button (left-center) */}
+      <Button
+        onClick={() => navigate('/capabilities')}
+        variant="ghost"
+        data-testid="back-btn"
+        className="fixed left-10 top-1/2 -translate-y-1/2 z-50 w-16 h-16 rounded-full bg-[#0d0d0d] border-2 border-[#301B3F]/30 text-gray-300 hover:bg-[#720455] hover:border-transparent hover:text-white flex items-center justify-center shadow-2xl transition-all duration-300"
+      >
+        <ArrowLeft className="w-10 h-10" />
+      </Button>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl py-10">
 
 

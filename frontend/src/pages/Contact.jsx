@@ -6,12 +6,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Mail, Phone, MapPin, Clock, MessageSquare, Send, CheckCircle, Headphones, FileText, X, User } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
+import { COUNTRIES } from '@/utils/countries';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
+    country: 'IN',
     company: '',
     subject: 'general',
     message: ''
@@ -111,7 +113,7 @@ const Contact = () => {
       });
       setSubmitted(true);
       toast.success('Message sent successfully! We\'ll get back to you soon.');
-      setFormData({ name: '', email: '', phone: '', company: '', subject: 'general', message: '' });
+      setFormData({ name: '', email: '', phone: '', country: 'IN', company: '', subject: 'general', message: '' });
     } catch (error) {
       console.error('Submission failed:', error);
       toast.error('Failed to send message. Please try again or email us directly.');
@@ -227,15 +229,32 @@ const Contact = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">Phone</label>
-                      <Input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="+91 886 735 7592"
-                        className="bg-[#1a1a1a] border-[#301B3F] text-white"
-                        data-testid="contact-phone"
-                      />
+                      <label className="block  font-medium text-gray-300 mb-2">Phone</label>
+                      <div className="flex gap-2">
+                        <select
+                          value={formData.country}
+                          onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                          className="w-32 bg-[#1a1a1a] border border-[#301B3F] text-white rounded-lg text-sm"
+                          data-testid="contact-country"
+                        >
+                          {COUNTRIES.map((country) => (
+                            <option key={country.code} value={country.code}>
+                              {country.dialCode} {country.name}
+                            </option>
+                          ))}
+                        </select>
+                        <Input
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="Enter phone number"
+                          className="flex-1 bg-[#1a1a1a] border-[#301B3F] text-white"
+                          data-testid="contact-phone"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-400 mt-2">
+                        {COUNTRIES.find(c => c.code === formData.country)?.dialCode}
+                      </p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">Company</label>
@@ -255,7 +274,7 @@ const Contact = () => {
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       required
-                      className="w-full bg-[#1a1a1a] border border-[#301B3F] text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#720455]"
+                      className="w-full bg-[#1a1a1a] border border-[#301B3F] text-white text-sm rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#720455]"
                       data-testid="contact-subject"
                     >
                       {subjects.map((subject) => (

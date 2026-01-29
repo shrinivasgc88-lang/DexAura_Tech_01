@@ -320,7 +320,7 @@ const Header = () => {
                     <DropdownMenuItem onClick={() => navigate('/teamspace')} data-testid="teamspace-link">
                       Teamspace
                     </DropdownMenuItem>
-                    {user?.role === 'Admin' && (
+                    {user?.role === 'ADMIN' && (
                       <DropdownMenuItem onClick={() => navigate('/admin')} data-testid="admin-link">
                         Admin Dashboard
                       </DropdownMenuItem>
