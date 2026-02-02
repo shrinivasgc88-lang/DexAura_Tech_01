@@ -96,7 +96,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Cpu, Box, Printer, Sparkles, ArrowLeft } from 'lucide-react';
 import cncVideo from '@/assects/Videos/cnc.mp4';
-import sheetMetalVideo from '@/assects/Videos/CMM.mp4';
+import sheetMetalVideo from '@/assects/Videos/sheet_metal.mp4';
 import printingVideo from '@/assects/Videos/3D_printing.mp4';
 import specialProcessVideo from '@/assects/Videos/special_process.mp4';
 import cncImage from '@/assects/Images/cnc_m08.jpg';

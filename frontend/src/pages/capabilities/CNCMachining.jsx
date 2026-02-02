@@ -380,6 +380,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import millingImage from '@/assects/Images/milling.jpg';
+import cnc_milling from '@/assects/Images/cnc_milling.png';
+import cnc_turning from '@/assects/Images/cnc_turning.png';
 
 import turningImage from '@/assects/Images/CNC_Machining.jpg';
 import productionImage from '@/assects/Images/Special_process.jpg';
@@ -637,7 +639,7 @@ const CNCMachining = () => {
             {/* CNC Milling card */}
             <article className="group relative overflow-hidden rounded-3xl border border-[#301B3F]/40 shadow-xl shadow-black/40 h-80 hover:border-[#720455] transition-all duration-300 hover:shadow-xl hover:shadow-[#720455]/20 cursor-pointer" onClick={() => navigate('/capabilities/cnc-milling')}>
               <img
-                src={millingImage}
+                src={cnc_milling}
                 alt="CNC Milling"
                 className="absolute inset-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                 loading="lazy"
@@ -664,7 +666,7 @@ const CNCMachining = () => {
             {/* CNC Turning card */}
             <article className="group relative overflow-hidden rounded-3xl border border-[#301B3F]/40 shadow-xl shadow-black/40 h-80 hover:border-[#720455] transition-all duration-300 hover:shadow-xl hover:shadow-[#720455]/20 cursor-pointer" onClick={() => navigate('/capabilities/cnc-turning')}>
               <img
-                src={turningImage}
+                src={cnc_turning}
                 alt="CNC Turning"
                 className="absolute inset-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                 loading="lazy"

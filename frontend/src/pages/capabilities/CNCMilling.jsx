@@ -3,12 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import cncVideo from '@/assects/Videos/cnc.mp4';
+import cnc_m01 from '@/assects/Images/cnc_m01-1.jpeg';
+import cnc_m02 from '@/assects/Images/cnc_m02.jpg';
+import cnc_m03 from '@/assects/Images/cnc_m03.jpg';
+import cnc_m04 from '@/assects/Images/cnc_m04-01.jpg';
+import cnc_m05 from '@/assects/Images/cnc_m08.jpg';
 import millingImage from '@/assects/Images/cnc_m08.jpg';
 import cncPartImage from '@/assects/Images/CNC_Machining.jpg';
 import specialProcessImage from '@/assects/Images/Special_process.jpg';
 
 const CNCMilling = () => {
-  const processSlides = [millingImage, cncPartImage, specialProcessImage];
+  const processSlides = [cnc_m01, cnc_m02, cnc_m03, cnc_m04, cnc_m05];
   const [processIndex, setProcessIndex] = useState(0);
   const navigate = useNavigate();
 
@@ -181,6 +186,9 @@ const CNCMilling = () => {
 
       <section className="relative flex min-h-[100vh] flex-col items-center justify-center overflow-hidden px-6 py-8 text-center">
         <video
+        ref={(video) => {
+                        if (video) video.playbackRate = 0.5;
+                        }}
           className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
           autoPlay
           loop

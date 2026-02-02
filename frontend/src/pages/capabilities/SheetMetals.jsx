@@ -2,8 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import sheetHero from '@/assects/Images/Sheet_Metal.jpg';
+import sheetMetalVideo from '@/assects/Videos/sheet_metal.mp4';
 import sheetProcess from '@/assects/Images/Special_process.jpg';
 import sheetDetail from '@/assects/Images/milling.jpg';
+import laser from '@/assects/Images/laser_cutting.png';
+import forming from '@/assects/Images/forming_and_bending.png';
+import punching from '@/assects/Images/punching.png';
+import assembly from '@/assects/Images/fabrication_and_assembly.png';
 
 import { ArrowLeft } from 'lucide-react';
 
@@ -35,7 +40,7 @@ const SheetMetals = () => {
         <ArrowLeft className="w-18 h-18 sm:w-16 sm:h-16 text-[#720455] animate-bounce" style={{ animationDirection: 'reverse', animationDelay: '0s' }} />
       </button>
 
-      `<style>{`
+      <style>{`
         @keyframes slideLeft {
           0%, 100% { transform: translateX(0); }
           50% { transform: translateX(-12px); }
@@ -50,8 +55,8 @@ const SheetMetals = () => {
 
      {/* Hero with slideshow background */}
       <section className="relative min-h-[100vh] flex items-center overflow-hidden px-6 py-8 text-center">
-        <div className="absolute inset-0">
-          {heroSlides.map((src, idx) => (
+        {/* <div className="absolute inset-0"> */}
+          {/* {heroSlides.map((src, idx) => (
             <img
               key={`${src}-${idx}`}
               src={src}
@@ -60,9 +65,24 @@ const SheetMetals = () => {
                 idx === heroIndex ? 'opacity-100' : 'opacity-0'
               }`}
             />
-          ))}
+          ))} */}
+          <video
+              ref={(video) => {
+                                if (video) video.playbackRate = 0.5;
+                              }}
+                    className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
+                    autoPlay
+                    loop
+                    playbackrate="0.5"
+                    muted
+                    playsInline
+                    preload="auto"
+                    aria-hidden="true"
+                  >
+                    <source src={sheetMetalVideo} type="video/mp4" />
+                  </video>
           <div className="absolute inset-0 bg-gradient-to-br from-black/85 via-black/60 to-black/90" />
-        </div>
+        {/* </div> */}
 
         <div className="relative z-10 container mx-auto max-w-4xl flex flex-col items-center justify-center gap-4">
           <p className="text-xs uppercase tracking-[0.4em] text-white/60">
@@ -103,7 +123,7 @@ const SheetMetals = () => {
             {/* Laser Cutting */}
             <article className="group relative overflow-hidden rounded-3xl border border-[#301B3F]/40 shadow-xl shadow-black/40 h-80 hover:border-[#720455] transition-all duration-300 hover:shadow-xl hover:shadow-[#720455]/20 cursor-pointer" onClick={() => navigate('/capabilities/sheet-metals/laser-cutting')}>
               <img
-                src={sheetHero}
+                src={laser}
                 alt="Laser cutting"
                 className="absolute inset-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                 loading="lazy"
@@ -129,7 +149,7 @@ const SheetMetals = () => {
             {/* Forming and Bending */}
             <article className="group relative overflow-hidden rounded-3xl border border-[#301B3F]/40 shadow-xl shadow-black/40 h-80 hover:border-[#720455] transition-all duration-300 hover:shadow-xl hover:shadow-[#720455]/20 cursor-pointer" onClick={() => navigate('/capabilities/sheet-metals/forming-bending')}>
               <img
-                src={sheetProcess}
+                src={forming}
                 alt="Forming and bending"
                 className="absolute inset-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                 loading="lazy"
@@ -155,7 +175,7 @@ const SheetMetals = () => {
             {/* Punching */}
             <article className="group relative overflow-hidden rounded-3xl border border-[#301B3F]/40 shadow-xl shadow-black/40 h-80 hover:border-[#720455] transition-all duration-300 hover:shadow-xl hover:shadow-[#720455]/20 cursor-pointer" onClick={() => navigate('/capabilities/sheet-metals/punching')}>
               <img
-                src={sheetDetail}
+                src={punching}
                 alt="Punching"
                 className="absolute inset-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                 loading="lazy"
@@ -181,7 +201,7 @@ const SheetMetals = () => {
             {/* Fabricated Assemblies */}
             <article className="group relative overflow-hidden rounded-3xl border border-[#301B3F]/40 shadow-xl shadow-black/40 h-80 hover:border-[#720455] transition-all duration-300 hover:shadow-xl hover:shadow-[#720455]/20 cursor-pointer" onClick={() => navigate('/capabilities/sheet-metals/fabricated-assemblies')}>
               <img
-                src={sheetProcess}
+                src={assembly}
                 alt="Fabricated assemblies"
                 className="absolute inset-0 h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                 loading="lazy"
