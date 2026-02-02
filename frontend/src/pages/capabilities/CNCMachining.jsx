@@ -569,15 +569,30 @@ const CNCMachining = () => {
 
   return (
     <div className="min-h-screen bg-[#151515]">
-      {/* Floating circular back button (left-center) */}
-      <Button
-        onClick={() => navigate('/capabilities')}
-        variant="ghost"
+      {/* Floating back control (native button + continuous left-slide animation) */}
+      <button
+        type="button"
+        aria-label="Back to capabilities"
         data-testid="back-btn"
-        className="fixed left-10 top-1/2 -translate-y-1/2 z-50 w-16 h-16 rounded-full bg-[#0d0d0d] border-2 border-[#301B3F]/30 text-gray-300 hover:bg-[#720455] hover:border-transparent hover:text-white flex items-center justify-center shadow-2xl transition-all duration-300"
+        onClick={() => navigate('/capabilities')}
+        className="fixed left-10 top-1/2 -translate-y-1/2 z-50 p-0 bg-transparent border-none text-[#720455] hover:opacity-90 transition-transform duration-200 animate-bounce-container"
+        style={{ animationDelay: '0s' }}
       >
-        <ArrowLeft className="w-10 h-10" />
-      </Button>
+        <ArrowLeft className="w-18 h-18 sm:w-16 sm:h-16 text-[#720455] animate-bounce" style={{ animationDirection: 'reverse', animationDelay: '0s' }} />
+      </button>
+
+      <style>{`
+        @keyframes slideLeft {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(-12px); }
+        }
+        .animate-bounce-container { animation: slideLeft 1.5s infinite; }
+        @keyframes bounceArrow {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(-12px); }
+        }
+        .animate-bounce { animation: bounceArrow 1.5s infinite; }
+      `}</style>
 
       {/* Full-screen header / hero with background slideshow */}
       <section className="relative min-h-[100vh] flex items-center overflow-hidden">

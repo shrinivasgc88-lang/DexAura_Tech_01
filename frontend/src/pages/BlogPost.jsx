@@ -172,20 +172,30 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-[#151515]">
-      {/* Back Button */}
-      <div className="bg-[#0d0d0d] border-b border-[#301B3F]/30 sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Button
-            onClick={() => navigate('/blog')}
-            variant="ghost"
-            className="text-gray-300 hover:text-white"
-            data-testid="back-to-blog-btn"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Blog
-          </Button>
-        </div>
-      </div>
+{/* Floating back control (native button so SVG sizing isn't constrained) */}
+  <button
+    type="button"
+    aria-label="Back to blog"
+    data-testid="back-btn"
+    onClick={() => navigate('/blog')}
+    className="fixed left-4 sm:left-10 top-1/2 -translate-y-1/2 z-50 p-0 bg-transparent border-none text-[#720455] hover:opacity-90 transition-transform duration-200 animate-bounce-container"
+    style={{ animationDelay: '0s' }}
+  >
+    <ArrowLeft className="w-18 h-18 sm:w-16 sm:h-16 text-[#720455] animate-bounce" style={{ animationDirection: 'reverse', animationDelay: '0s' }} />
+  </button>
+
+      <style>{`
+        @keyframes slideLeft {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(-12px); }
+        }
+        .animate-bounce-container { animation: slideLeft 1.5s infinite; }
+        @keyframes bounceArrow {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(-12px); }
+        }
+        .animate-bounce { animation: bounceArrow 1.5s infinite; }
+      `}</style>
 
       {/* Hero Section */}
       <section className="relative py-12">
