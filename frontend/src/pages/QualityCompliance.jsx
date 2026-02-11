@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { CheckCircle, Award, Shield, FileCheck, Microscope, ClipboardCheck, Target, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import inspection01 from '@/assects/Images/Inspection01.jpg';
+import inspection02 from '@/assects/Images/Inspection02.jpg';
+import inspection03 from '@/assects/Images/Inspection03-1.jpg';
 
 const QualityCompliance = () => {
   const navigate = useNavigate();
@@ -144,9 +147,9 @@ const QualityCompliance = () => {
   ];
 
   const qualityImages = [
-    'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=600&h=400&fit=crop',
-    'https://images.unsplash.com/photo-1565114925726-28c3e671fa5f?w=600&h=400&fit=crop'
+    inspection01,
+    inspection02,
+    inspection03
   ];
 
   return (

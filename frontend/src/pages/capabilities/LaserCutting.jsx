@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import sheetHero from '@/assects/Images/Sheet_Metal.jpg';
 import sheetProcess from '@/assects/Images/Special_process.jpg';
+import laser_cutting from '@/assects/Images/laser_cutting.png';
+
 import sheetDetail from '@/assects/Images/milling.jpg';
 
 const LaserCutting = () => {
@@ -39,7 +41,7 @@ const LaserCutting = () => {
       <section className="relative flex min-h-[100vh] flex-col items-center justify-center overflow-hidden px-6 py-8 text-center">
         <div className="absolute inset-0">
           <img
-            src={sheetHero}
+            src={laser_cutting}
             alt="Metal laser cutting hero"
             className="absolute inset-0 h-full w-full object-cover"
           />
@@ -92,9 +94,9 @@ const LaserCutting = () => {
               </ul>
             </div>
             <div className="h-full">
-              <div className="h-72 w-full overflow-hidden rounded-2xl border border-[#301B3F]/40 bg-black/40">
+              <div className="h-80 w-full overflow-hidden rounded-2xl border border-[#301B3F]/40 bg-black/40">
                 <img
-                  src={sheetProcess}
+                  src={laser_cutting}
                   alt="Laser cutting process"
                   className="h-full w-full object-cover"
                   loading="lazy"

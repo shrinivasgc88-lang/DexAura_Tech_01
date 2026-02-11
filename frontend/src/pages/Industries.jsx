@@ -2,6 +2,24 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import aero01 from '@/assects/Images/cnc_m01-1.jpeg';
+import aero02 from '@/assects/Images/cnc_m01-2.jpeg';
+import aero03 from '@/assects/Images/cnc_m01-3.jpeg';
+import automobile01 from '@/assects/Images/cnc_m04-01.jpg';
+import automobile02 from '@/assects/Images/cnc_m04-02.jpg';
+import automobile03 from '@/assects/Images/cnc_m04-03.jpg';
+import med01 from '@/assects/Images/cnc_m01-1.jpeg';
+import med02 from '@/assects/Images/cnc_m01-1.jpeg';
+import med03 from '@/assects/Images/cnc_m01-1.jpeg';
+import robo01 from '@/assects/Images/cnc_m01-1.jpeg';
+import robo02 from '@/assects/Images/cnc_m01-1.jpeg';
+import robo03 from '@/assects/Images/cnc_m01-1.jpeg';
+import c_electronics01 from '@/assects/Images/cnc_m01-1.jpeg';
+import c_electronics02 from '@/assects/Images/cnc_m01-1.jpeg';
+import c_electronics03 from '@/assects/Images/cnc_m01-1.jpeg';
+import industry01 from '@/assects/Images/cnc_m01-1.jpeg';
+import industry02 from '@/assects/Images/cnc_m01-1.jpeg';
+import industry03 from '@/assects/Images/cnc_m01-1.jpeg';
 import { Plane, Car, Heart, Cpu, Wrench, Package, CheckCircle, ArrowRight, Award, Clock, Shield } from 'lucide-react';
 
 const Industries = () => {
@@ -15,9 +33,7 @@ const Industries = () => {
       tagline: 'Mission-Critical Precision for Flight-Ready Components',
       heroImage: 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=1200&h=600&fit=crop',
       galleryImages: [
-        'https://images.unsplash.com/photo-1436262513933-a0b06755c784?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1583468323330-9032ad490fed?w=600&h=400&fit=crop'
+        aero01,aero02,aero03,
       ],
       description: 'Supporting aerospace innovation from prototype to production with AS9100D certified manufacturing. We deliver precision components that meet the stringent requirements of commercial aviation, defense systems, and space exploration.',
       
@@ -97,9 +113,7 @@ const Industries = () => {
       tagline: 'Accelerating Innovation in Traditional and Electric Vehicles',
       heroImage: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&h=600&fit=crop',
       galleryImages: [
-        'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop'
+        automobile01,automobile02,automobile03
       ],
       description: 'Supporting automotive manufacturers with rapid prototyping and production capabilities. From concept validation to tooling and production parts, we enable faster time-to-market for traditional, electric, and autonomous vehicle development.',
       

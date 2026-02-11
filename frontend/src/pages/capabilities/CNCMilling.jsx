@@ -11,6 +11,21 @@ import cnc_m05 from '@/assects/Images/cnc_m08.jpg';
 import millingImage from '@/assects/Images/cnc_m08.jpg';
 import cncPartImage from '@/assects/Images/CNC_Machining.jpg';
 import specialProcessImage from '@/assects/Images/Special_process.jpg';
+import aluminum from '@/assects/Images/aluminium.png';
+import brass from '@/assects/Images/brass.png';
+import copper from '@/assects/Images/copper.png';
+import stainless_steel from '@/assects/Images/stainless_steel.png';
+import alloy_steel from '@/assects/Images/alloy_steel.png';
+import titanium from '@/assects/Images/titanium.png';
+import abs from '@/assects/Images/abs.png';
+import acetal from '@/assects/Images/POM.png';
+import nylon from '@/assects/Images/nylon.png';
+import peek from '@/assects/Images/PEEK.png';
+import polycarbonate from '@/assects/Images/polycarbonate.png';
+import acrylic from '@/assects/Images/acrylic.png';
+import hdpe_ldpe from '@/assects/Images/HDPE.png';
+import ptfe from '@/assects/Images/PTFE.png';
+import pvc from '@/assects/Images/PVC.png';
 
 const CNCMilling = () => {
   const processSlides = [cnc_m01, cnc_m02, cnc_m03, cnc_m04, cnc_m05];
@@ -24,7 +39,7 @@ const CNCMilling = () => {
       name: 'Aluminum (e.g., 6061, 7075)',
       description:
         'Aluminum 6061 and 7075 balance strength, weight, and machinability, making them ideal for brackets, enclosures, heat sinks, and structural components.',
-      image: cncPartImage
+      image: aluminum
     },
     {
       id: 'brass',
@@ -32,7 +47,7 @@ const CNCMilling = () => {
       name: 'Brass',
       description:
         'Brass machines very cleanly with excellent surface finish, commonly used for fittings, decorative components, and low-friction mechanical parts.',
-      image: millingImage
+      image: brass
     },
     {
       id: 'copper',
@@ -40,7 +55,7 @@ const CNCMilling = () => {
       name: 'Copper',
       description:
         'Copper offers outstanding electrical and thermal conductivity, making it ideal for bus bars, heat spreaders, and RF or power components.',
-      image: specialProcessImage
+      image: copper
     },
     {
       id: 'stainless',
@@ -48,7 +63,7 @@ const CNCMilling = () => {
       name: 'Stainless Steels',
       description:
         'Stainless steels such as 304 and 17-4PH provide excellent corrosion resistance and strength for medical, food-contact, and industrial assemblies.',
-      image: specialProcessImage
+      image: stainless_steel
     },
     {
       id: 'alloy-steel',
@@ -56,7 +71,7 @@ const CNCMilling = () => {
       name: 'Alloy and Mild Steels',
       description:
         'Low-carbon and alloy steels machine cleanly and can be heat treated for higher strength in shafts, housings, fixtures, and tooling components.',
-      image: millingImage
+      image: alloy_steel
     },
     {
       id: 'titanium',
@@ -64,7 +79,7 @@ const CNCMilling = () => {
       name: 'Titanium',
       description:
         'Titanium Grade 5 combines high specific strength with corrosion resistance, well-suited for aerospace, medical, and high-performance hardware.',
-      image: cncPartImage
+      image: titanium
     }
   ];
 
@@ -75,7 +90,7 @@ const CNCMilling = () => {
       name: 'ABS',
       description:
         'ABS is a tough, impact-resistant plastic commonly used for housings, brackets, and functional prototypes that need good machinability.',
-      image: millingImage
+      image: abs
     },
     {
       id: 'acetal',
@@ -83,7 +98,7 @@ const CNCMilling = () => {
       name: 'Acetal (POM) / Delrin',
       description:
         'Acetal (POM) offers low friction, good wear, and dimensional stability, making it a go-to choice for gears, bushings, and precision mechanical parts.',
-      image: cncPartImage
+      image: acetal
     },
     {
       id: 'nylon',
@@ -91,7 +106,7 @@ const CNCMilling = () => {
       name: 'Nylon 6/6',
       description:
         'Nylon provides low friction and good wear resistance, ideal for bearings, rollers, wear strips, and structural components.',
-      image: specialProcessImage
+      image: nylon
     },
     {
       id: 'pc',
@@ -99,7 +114,7 @@ const CNCMilling = () => {
       name: 'Polycarbonate',
       description:
         'Polycarbonate is a clear, tough engineering plastic used when impact resistance, transparency, and dimensional stability are critical.',
-      image: millingImage
+      image: polycarbonate
     },
     {
       id: 'peek',
@@ -107,7 +122,7 @@ const CNCMilling = () => {
       name: 'PEEK',
       description:
         'PEEK is a high-temperature, high-strength plastic widely used in aerospace, oil & gas, and medical applications where performance is critical.',
-      image: cncPartImage
+      image: peek
     },
     {
       id: 'acrylic',
@@ -115,7 +130,7 @@ const CNCMilling = () => {
       name: 'Acrylic (PMMA)',
       description:
         'Acrylic is a clear, rigid plastic often used for display windows, light pipes, and covers where optical clarity matters.',
-      image: specialProcessImage
+      image: acrylic
     },
     {
       id: 'hdpe-ldpe',
@@ -123,7 +138,7 @@ const CNCMilling = () => {
       name: 'HDPE / LDPE',
       description:
         'High- and low-density polyethylene are lightweight, tough plastics suitable for impact-resistant components, guards, and chemical-contact parts.',
-      image: millingImage
+      image: hdpe_ldpe
     },
     {
       id: 'ptfe',
@@ -131,7 +146,7 @@ const CNCMilling = () => {
       name: 'PTFE',
       description:
         'PTFE offers exceptional chemical resistance and very low friction, ideal for seals, bushings, and components in aggressive environments.',
-      image: cncPartImage
+      image: ptfe
     },
     {
       id: 'pvc',
@@ -139,7 +154,7 @@ const CNCMilling = () => {
       name: 'PVC',
       description:
         'Rigid PVC is used for manifolds, fittings, and enclosures where chemical resistance and electrical insulation are required.',
-      image: specialProcessImage
+      image: pvc
     }
   ];
 
