@@ -83,11 +83,11 @@ const FabricatedAssemblies = () => {
                 fastened structures. Typical assemblies include chassis, enclosures, frames, and brackets that arrive
                 ready for integration into your product.
               </p>
-              <p className="text-gray-300">
+              {/* <p className="text-gray-300">
                 Our workflow starts with flat cutting via laser or punching, followed by forming on press brakes,
                 hardware insertion, and, when specified, welding or riveting. Finishing processes such as plating,
                 powder coating, and part marking round out the build so your assemblies are production-ready.
-              </p>
+              </p> */}
               <ul className="space-y-2 text-gray-200 text-sm list-disc list-inside">
                 <li>Supports functional prototypes, product testing, and pilot builds</li>
                 <li>Scales to low-volume end-use production</li>
