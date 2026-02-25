@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import sheetHero from '@/assects/Images/Sheet_Metal.jpg';
 import sheetProcess from '@/assects/Images/Special_process.jpg';
+import punch02 from '@/assects/Images/punch.png';
+import punch from '@/assects/Images/punching.png';
+
 
 const Punching = () => {
   const navigate = useNavigate();
@@ -38,7 +41,7 @@ const Punching = () => {
       <section className="relative flex min-h-[100vh] flex-col items-center justify-center overflow-hidden px-6 py-8 text-center">
         <div className="absolute inset-0">
           <img
-            src={sheetHero}
+            src={punch}
             alt="Sheet metal punching hero"
             className="absolute inset-0 h-full w-full object-cover"
           />
@@ -97,7 +100,7 @@ const Punching = () => {
             <div className="h-full">
               <div className="h-72 w-full overflow-hidden rounded-2xl border border-[#301B3F]/40 bg-black/40">
                 <img
-                  src={sheetProcess}
+                  src={punch02}
                   alt="Sheet metal punching process"
                   className="h-full w-full object-cover"
                   loading="lazy"

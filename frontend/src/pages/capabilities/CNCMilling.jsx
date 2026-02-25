@@ -10,7 +10,8 @@ import cnc_m04 from '@/assects/Images/cnc_m04-01.jpg';
 import cnc_m05 from '@/assects/Images/cnc_m08.jpg';
 import millingImage from '@/assects/Images/cnc_m08.jpg';
 import cncPartImage from '@/assects/Images/CNC_Machining.jpg';
-import specialProcessImage from '@/assects/Images/Special_process.jpg';
+import axis01 from '@/assects/Images/3-axis_machine.png';
+import axis02 from '@/assects/Images/5-axis_machine.png';
 import aluminum from '@/assects/Images/aluminium.png';
 import brass from '@/assects/Images/brass.png';
 import copper from '@/assects/Images/copper.png';
@@ -172,6 +173,30 @@ const CNCMilling = () => {
     return () => clearInterval(timer);
   }, [processSlides.length]);
 
+  // Handle hash anchor navigation
+  useEffect(() => {
+    const hash = window.location.hash.slice(1); // Remove the '#' character
+    if (hash) {
+      // Check if it's a metal or plastic material
+      const isMetal = metalMaterials.some((m) => m.id === hash);
+      const isPlastic = plasticMaterials.some((p) => p.id === hash);
+      
+      if (isMetal) {
+        setActiveMetal(hash);
+      } else if (isPlastic) {
+        setActivePlastic(hash);
+      }
+      
+      // Scroll to the element after a short delay to ensure rendering
+      setTimeout(() => {
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#151515]">
       {/* Floating back control (native button + continuous left-slide animation) */}
@@ -313,7 +338,7 @@ const CNCMilling = () => {
           <article className="grid gap-6 md:grid-cols-[2fr,3fr] items-center rounded-2xl bg-[#1a1a1a] border border-[#301B3F]/40 p-6">
             <div className="h-48 w-full overflow-hidden rounded-xl bg-black/40">
               <img
-                src={millingImage}
+                src={axis01}
                 alt="3-axis CNC milling setup"
                 className="h-full w-full object-cover"
                 loading="lazy"
@@ -347,7 +372,7 @@ const CNCMilling = () => {
             </div>
             <div className="h-48 w-full overflow-hidden rounded-xl bg-black/40">
               <img
-                src={cncPartImage}
+                src={axis02}
                 alt="5-axis indexed milling part"
                 className="h-full w-full object-cover"
                 loading="lazy"
@@ -367,13 +392,14 @@ const CNCMilling = () => {
           </div>
 
           {/* Metals */}
-          <div className="space-y-6">
+          <div className="space-y-6" id="metals">
             <div className="flex flex-col gap-2">
               <h3 className="text-xl font-semibold text-white">Metals</h3>
               <div className="flex flex-wrap gap-3 border-b border-white/10 pb-1">
                 {metalMaterials.map((metal) => (
                   <button
                     key={metal.id}
+                    id={metal.id}
                     type="button"
                     onClick={() => setActiveMetal(metal.id)}
                     className={`px-3 pb-2 text-sm font-medium transition ${
@@ -405,13 +431,14 @@ const CNCMilling = () => {
           </div>
 
           {/* Plastics */}
-          <div className="space-y-6">
+          <div className="space-y-6" id="plastics">
             <div className="flex flex-col gap-2">
               <h3 className="text-xl font-semibold text-white">Plastics</h3>
               <div className="flex flex-wrap gap-3 border-b border-white/10 pb-1">
                 {plasticMaterials.map((plastic) => (
                   <button
                     key={plastic.id}
+                    id={plastic.id}
                     type="button"
                     onClick={() => setActivePlastic(plastic.id)}
                     className={`px-3 pb-2 text-sm font-medium transition ${

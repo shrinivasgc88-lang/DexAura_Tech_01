@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import sheetHero from '@/assects/Images/Sheet_Metal.jpg';
 import sheetProcess from '@/assects/Images/Special_process.jpg';
+import pressbreak from '@/assects/Images/press_brak.png';
+
 
 
 const FormingBending = () => {
@@ -89,7 +91,7 @@ const FormingBending = () => {
             <div className="h-full">
               <div className="h-72 w-full overflow-hidden rounded-2xl border border-[#301B3F]/40 bg-black/40">
                 <img
-                  src={sheetProcess}
+                  src={pressbreak}
                   alt="Press brake forming"
                   className="h-full w-full object-cover"
                   loading="lazy"

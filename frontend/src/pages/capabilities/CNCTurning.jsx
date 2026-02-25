@@ -5,6 +5,16 @@ import { ArrowLeft } from 'lucide-react';
 import turningHero from '@/assects/Images/CNC_Machining.jpg';
 import turningDetail from '@/assects/Images/Special_process.jpg';
 import turningSurface from '@/assects/Images/milling.jpg';
+import turning02 from '@/assects/Images/Turning_02.png';
+import turning01 from '@/assects/Images/cnc_turning.png';
+import turningmaterial from '@/assects/Images/turning_machine.png';
+import aluminum from '@/assects/Images/aluminium.png';
+import brass from '@/assects/Images/brass.png';
+import low_carbon_steel from '@/assects/Images/low_carban_steel.png';
+import stainless_steel from '@/assects/Images/stainless_steel.png';
+import alloy_steel from '@/assects/Images/alloy_steel.png';
+import titanium from '@/assects/Images/titanium.png';
+
 
 const CNCTurning = () => {
   // Simple slideshow for hero background
@@ -27,7 +37,7 @@ const CNCTurning = () => {
       name: 'Aluminum',
       description:
         'Aluminum combines excellent machinability with low weight and good strength, ideal for bushings, housings, and fluid-handling components.',
-      image: turningHero
+      image: aluminum
     },
     {
       id: 'brass',
@@ -35,7 +45,7 @@ const CNCTurning = () => {
       name: 'Brass',
       description:
         'Brass turns very cleanly and delivers a smooth surface finish, commonly used for fittings, connectors, and cosmetic hardware.',
-      image: turningSurface
+      image: brass
     },
     {
       id: 'low-carbon-steel',
@@ -43,7 +53,7 @@ const CNCTurning = () => {
       name: 'Low Carbon Steel',
       description:
         'Low carbon steels offer a cost-effective balance of machinability and strength for shafts, spacers, and structural components.',
-      image: turningDetail
+      image: low_carbon_steel
     },
     {
       id: 'steel-alloy',
@@ -51,7 +61,7 @@ const CNCTurning = () => {
       name: 'Steel Alloys',
       description:
         'Alloy steels can be heat treated for higher strength and wear resistance in demanding drivetrain and tooling applications.',
-      image: turningHero
+      image: alloy_steel
     },
     {
       id: 'stainless-steel',
@@ -59,7 +69,7 @@ const CNCTurning = () => {
       name: 'Stainless Steels',
       description:
         'Stainless steels provide corrosion resistance and durability for medical, food-contact, and outdoor assemblies.',
-      image: turningDetail
+      image: stainless_steel
     },
     {
       id: 'titanium',
@@ -67,7 +77,7 @@ const CNCTurning = () => {
       name: 'Titanium',
       description:
         'Titanium combines high specific strength with corrosion resistance and is often used for aerospace, medical, and high-performance hardware.',
-      image: turningSurface
+      image: titanium
     }
   ];
 
@@ -165,7 +175,7 @@ const CNCTurning = () => {
             <div className="h-full">
               <div className="relative h-full w-full overflow-hidden rounded-2xl border border-[#301B3F]/40 bg-black/40">
                 <img
-                  src={turningHero}
+                  src={turningmaterial}
                   alt="CNC turning process"
                   className="h-full w-full object-cover"
                   loading="lazy"
@@ -183,7 +193,7 @@ const CNCTurning = () => {
           <article className="grid gap-6 md:grid-cols-[2fr,3fr] items-center rounded-2xl bg-[#1a1a1a] border border-[#301B3F]/40 p-6">
             <div className="h-48 w-full overflow-hidden rounded-xl bg-black/40">
               <img
-                src={turningSurface}
+                src={turning01}
                 alt="Cylindrical turning"
                 className="h-full w-full object-cover"
                 loading="lazy"
@@ -217,7 +227,7 @@ const CNCTurning = () => {
             </div>
             <div className="h-48 w-full overflow-hidden rounded-xl bg-black/40">
               <img
-                src={turningDetail}
+                src={turning02}
                 alt="Live-tool CNC turning"
                 className="h-full w-full object-cover"
                 loading="lazy"

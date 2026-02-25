@@ -3,7 +3,9 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import sheetHero from '@/assects/Images/Sheet_Metal.jpg';
-import sheetProcess from '@/assects/Images/Special_process.jpg';
+import hero from '@/assects/Images/fabrication_and_assembly.png';
+import hero from '@/assects/Images/fabrication_and_assembly.png';
+
 
 const FabricatedAssemblies = () => {
   const navigate = useNavigate();
@@ -38,7 +40,7 @@ const FabricatedAssemblies = () => {
       <section className="relative flex min-h-[100vh] flex-col items-center justify-center overflow-hidden px-6 py-8 text-center">
         <div className="absolute inset-0">
           <img
-            src={sheetHero}
+            src={hero}
             alt="Sheet metal assemblies hero"
             className="absolute inset-0 h-full w-full object-cover"
           />

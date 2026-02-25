@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import sheetHero from '@/assects/Images/Sheet_Metal.jpg';
-import sheetProcess from '@/assects/Images/Special_process.jpg';
+import laser_cutting02 from '@/assects/Images/laser_cutting02.png';
 import laser_cutting from '@/assects/Images/laser_cutting.png';
 
 import sheetDetail from '@/assects/Images/milling.jpg';
@@ -96,7 +96,7 @@ const LaserCutting = () => {
             <div className="h-full">
               <div className="h-80 w-full overflow-hidden rounded-2xl border border-[#301B3F]/40 bg-black/40">
                 <img
-                  src={laser_cutting}
+                  src={laser_cutting02}
                   alt="Laser cutting process"
                   className="h-full w-full object-cover"
                   loading="lazy"

@@ -26,6 +26,33 @@ const Industries = () => {
   const navigate = useNavigate();
   const [selectedIndustry, setSelectedIndustry] = useState('aerospace');
 
+  // Material ID mapping to capabilities pages
+  const materialIdMap = {
+    'aluminum': 'aluminum',
+    'titanium': 'titanium',
+    'steel': 'alloy-steel',
+    'stainless': 'stainless',
+    'brass': 'brass',
+    'copper': 'copper',
+    'magnesium': 'aluminum', // Fallback to aluminum section
+    'polycarbonate': 'pc',
+    'abs': 'abs',
+    'nylon': 'nylon',
+    'peek': 'peek',
+    'acetal': 'acetal',
+  };
+
+  // Function to get material ID from material name
+  const getMaterialId = (materialName) => {
+    const nameLower = materialName.toLowerCase();
+    for (const [key, id] of Object.entries(materialIdMap)) {
+      if (nameLower.includes(key)) {
+        return id;
+      }
+    }
+    return 'aluminum'; // Default fallback
+  };
+
   const industries = {
     aerospace: {
       icon: <Plane className="w-12 h-12" />,
@@ -701,7 +728,10 @@ const Industries = () => {
                     <p className="text-gray-400 text-sm">{material.use}</p>
                   </div>
                   <Button
-                    onClick={() => navigate('/capabilities')}
+                    onClick={() => {
+                      const materialId = getMaterialId(material.name);
+                      navigate(`/capabilities/cnc-milling#${materialId}`);
+                    }}
                     variant="ghost"
                     className="text-[#910A67] hover:text-white"
                     size="sm"
