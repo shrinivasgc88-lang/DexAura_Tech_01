@@ -4,6 +4,8 @@ import { CheckCircle, ArrowRight, Zap, Box, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import hero from '@/assects/Images/3D_Printing_hero.jpg';
+import SLM from '@/assects/Images/SLM.png';
 
 const ThreeDPrinting = () => {
   const navigate = useNavigate();
@@ -82,7 +84,7 @@ const ThreeDPrinting = () => {
     {
       name: 'SLA (Stereolithography)',
       icon: <Zap className="w-8 h-8" />,
-      image: 'https://images.unsplash.com/photo-1612832021824-601a4dc8f9a7?w=800&h=500&fit=crop',
+      image: SLM,
       description: 'High-resolution resin-based 3D printing producing parts with smooth surface finishes and fine details. Perfect for visual prototypes, master patterns for casting, dental and medical models, and parts requiring intricate features.',
       specs: [
         { param: 'Build Volume', value: 'Up to 300mm x 300mm x 300mm' },
@@ -317,7 +319,7 @@ const ThreeDPrinting = () => {
         {/* Hero Image */}
         <div className="mb-12 rounded-2xl overflow-hidden border border-[#301B3F]/30">
           <img 
-            src="https://images.unsplash.com/photo-1612832021824-601a4dc8f9a7?w=1200&h=500&fit=crop"
+            src={hero}
             alt="3D Printing Technology"
             className="w-full h-[400px] object-cover"
             loading="eager"

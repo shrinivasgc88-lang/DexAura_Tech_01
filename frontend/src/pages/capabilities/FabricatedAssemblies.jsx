@@ -2,8 +2,9 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import sheetHero from '@/assects/Images/Sheet_Metal.jpg';
-import hero02 from '@/assects/Images/fabrication_and_assembly.png';
+import inspection from '@/assects/Images/Hardware_inspection.png';
+import welding from '@/assects/Images/Welding_riveting.png';
+import hero02 from '@/assects/Images/fabrication_and_assembly02.png';
 import hero from '@/assects/Images/fabrication_and_assembly.png';
 
 
@@ -198,8 +199,30 @@ const FabricatedAssemblies = () => {
                 documentation.
               </p>
             </div>
-
+            <div className="h-full">
+              <div className="h-72 w-full overflow-hidden rounded-2xl border border-[#301B3F]/40 bg-black/40">
+                <img
+                  src={inspection}
+                  alt="Hardware inspection process"
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+            </div>
+            
+            <div className="grid gap-8 md:grid-cols-2 items-start">
             {/* Welding & riveting */}
+            <div className="h-full">
+              <div className="h-72 w-full overflow-hidden rounded-2xl border border-[#301B3F]/40 bg-black/40">
+                <img
+                  src={welding}
+                  alt="Welding and riveting process"
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            </div>
             <div className="space-y-4">
               <h2 className="text-2xl font-semibold text-white">Welding &amp; Riveting</h2>
               <p className="text-gray-300">
