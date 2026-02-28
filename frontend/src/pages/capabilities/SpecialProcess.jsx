@@ -4,6 +4,7 @@ import { CheckCircle, ArrowRight, Flame, Droplet, Hammer, Sparkles, Shield } fro
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import SP_hero from '@/assects/Images/Special_process_hero.png';
 
 const SpecialProcess = () => {
   const navigate = useNavigate();
@@ -269,7 +270,7 @@ const SpecialProcess = () => {
         {/* Hero Image */}
         <div className="mb-12 rounded-2xl overflow-hidden border border-[#301B3F]/30">
           <img 
-            src="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1200&h=500&fit=crop"
+            src={SP_hero}
             alt="Special manufacturing processes"
             className="w-full h-[400px] object-cover"
             loading="eager"

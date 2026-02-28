@@ -4,9 +4,10 @@ import { CheckCircle, ArrowRight, Zap, Box, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import hero from '@/assects/Images/3D_Printing_hero.jpg';
+import hero from '@/assects/Images/3D_Printing_hero.png';
 import SLM from '@/assects/Images/SLM.png';
-
+import SLS from '@/assects/Images/SLS.png';
+import FDM from '@/assects/Images/FDM.jpg';
 const ThreeDPrinting = () => {
   const navigate = useNavigate();
 
@@ -14,7 +15,7 @@ const ThreeDPrinting = () => {
     {
       name: 'FDM (Fused Deposition Modeling)',
       icon: <Layers className="w-8 h-8" />,
-      image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=500&fit=crop',
+      image: FDM,
       description: 'Most accessible additive technology building parts layer-by-layer with thermoplastic filaments. Ideal for functional prototypes, jigs, fixtures, and concept models with excellent strength and durability at economical pricing.',
       specs: [
         { param: 'Build Volume', value: 'Up to 400mm x 400mm x 400mm' },
@@ -162,7 +163,7 @@ const ThreeDPrinting = () => {
     {
       name: 'SLS/MJF (Selective Laser Sintering / Multi Jet Fusion)',
       icon: <Box className="w-8 h-8" />,
-      image: 'https://images.unsplash.com/photo-1565114925726-28c3e671fa5f?w=800&h=500&fit=crop',
+      image: SLS,
       description: 'Industrial-grade powder-based 3D printing producing strong, functional parts without support structures. Excellent for complex geometries, living hinges, snap-fits, and end-use production parts with superior mechanical properties.',
       specs: [
         { param: 'Build Volume', value: 'Up to 350mm x 350mm x 350mm' },
