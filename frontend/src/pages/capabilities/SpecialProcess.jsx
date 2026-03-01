@@ -1,13 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, ArrowRight, Flame, Droplet, Hammer, Sparkles, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import SP_hero from '@/assects/Images/Special_process_hero.png';
+import HT01 from '@/assects/Images/Heat_01.png';
+import HT02 from '@/assects/Images/Heat_02.png';
+import HT03 from '@/assects/Images/Heat_03.png';
+import SP01 from '@/assects/Images/SC_01.png';
+import SP02 from '@/assects/Images/SC_02.png';
+import SP03 from '@/assects/Images/SC_03.png';
+import DM01 from '@/assects/Images/DM_01.png';
+import DM02 from '@/assects/Images/DM_02.png';
+import DM03 from '@/assects/Images/DM_03.png';
+import OS01 from '@/assects/Images/OS_01.png';
+import OS02 from '@/assects/Images/OS_02.png';
+import OS03 from '@/assects/Images/OS_03.jpg';
 
 const SpecialProcess = () => {
   const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState('heat');
 
   const heatTreatments = [
     {
@@ -224,6 +237,15 @@ const SpecialProcess = () => {
     }
   ];
 
+  const galleryImagesMap = {
+    heat: [HT01, HT02, HT03],
+    coating: [SP01, SP02, SP03],
+    die: [DM01, DM02, DM03],
+    other: [OS01, OS02, OS03]
+  };
+
+  const galleryImages = galleryImagesMap[activeTab] || galleryImagesMap.heat;
+
   return (
     <div className="min-h-screen bg-[#151515] ">
       {/* Floating back control (native button + continuous left-slide animation) */}
@@ -293,7 +315,7 @@ const SpecialProcess = () => {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="heat" className="space-y-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
           <TabsList className="bg-[#1a1a1a] p-1.5 rounded-xl flex-wrap h-auto">
             <TabsTrigger value="heat" className="text-sm sm:text-base">Heat Treatment</TabsTrigger>
             <TabsTrigger value="coating" className="text-sm sm:text-base">Surface Coatings</TabsTrigger>
@@ -572,15 +594,11 @@ const SpecialProcess = () => {
         <div className="my-12">
           <h2 className="text-3xl font-bold text-white mb-6">Process Examples</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&h=400&fit=crop',
-              'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=600&h=400&fit=crop',
-              'https://images.unsplash.com/photo-1565114925726-28c3e671fa5f?w=600&h=400&fit=crop'
-            ].map((image, idx) => (
+            {galleryImages.map((image, idx) => (
               <div key={idx} className="rounded-xl overflow-hidden border border-[#301B3F]/30 hover:border-[#720455] transition-all duration-300 group">
                 <img 
                   src={image}
-                  alt={`Special process example ${idx + 1}`}
+                  alt={`Special process example ${idx + 1} - ${activeTab}`}
                   className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                   loading="lazy"
                 />

@@ -27,6 +27,10 @@ import acrylic from '@/assects/Images/acrylic.png';
 import hdpe_ldpe from '@/assects/Images/HDPE.png';
 import ptfe from '@/assects/Images/PTFE.png';
 import pvc from '@/assects/Images/PVC.png';
+import Exm01 from '@/assects/Images/cnc_mill_01.jpg';
+import Exm02 from '@/assects/Images/cnc_mill_02.jpg';
+import Exm03 from '@/assects/Images/cnc_mill_03.jpg';
+
 
 const CNCMilling = () => {
   const processSlides = [cnc_m01, cnc_m02, cnc_m03, cnc_m04, cnc_m05];
@@ -503,7 +507,7 @@ const CNCMilling = () => {
           </div>
         </section>
 
-        {/* About CNC Milling */}
+        {/* About CNC Milling
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold text-white">What is CNC Milling?</h2>
           <p className="text-gray-300 max-w-3xl">
@@ -516,7 +520,27 @@ const CNCMilling = () => {
             After machining, parts move directly to deburring and inspection, followed by any specified finishing. Once
             complete, components are packaged and shipped, often within a couple of days for standard prototype runs.
           </p>
-        </section>
+        </section> */}
+        {/* Gallery */}
+                <div className="my-12">
+                  <h2 className="text-3xl font-bold text-white mb-6">CNC Milling Examples</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[
+                      Exm01,
+                      Exm02,
+                      Exm03
+                    ].map((image, idx) => (
+                      <div key={idx} className="rounded-xl overflow-hidden border border-[#301B3F]/30 hover:border-[#720455] transition-all duration-300 group">
+                        <img 
+                          src={image}
+                          alt={`3D printing example ${idx + 1}`}
+                          className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
         {/* CTA */}
         <section className="rounded-3xl bg-gradient-to-r from-[#301B3F] via-[#720455] to-[#910A67] p-8 sm:p-10 text-white space-y-4">

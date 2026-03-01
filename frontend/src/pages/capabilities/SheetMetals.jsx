@@ -9,6 +9,10 @@ import laser from '@/assects/Images/laser_cutting.png';
 import forming from '@/assects/Images/forming_and_bending.png';
 import punching from '@/assects/Images/punching.png';
 import assembly from '@/assects/Images/fabrication_and_assembly.png';
+import Exm01 from '@/assects/Images/Sheet_Metal_Exm_02.jpg';
+import Exm02 from '@/assects/Images/Sheet_Metal_Exm_03.jpg';
+import Exm03 from '@/assects/Images/Sheet_Metal_Exm_04.jpg';
+
 
 import { ArrowLeft } from 'lucide-react';
 
@@ -322,6 +326,27 @@ const SheetMetals = () => {
             <li>• CR Galvanneal and CR Galvanized Steel</li>
             </ul>
         </section>
+
+         {/* Gallery */}
+                <div className="my-12">
+                  <h2 className="text-3xl font-bold text-white mb-6">Sheet Metal Examples</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[
+                      Exm01,
+                      Exm02,
+                      Exm03
+                    ].map((image, idx) => (
+                      <div key={idx} className="rounded-xl overflow-hidden border border-[#301B3F]/30 hover:border-[#720455] transition-all duration-300 group">
+                        <img 
+                          src={image}
+                          alt={`Sheet metal example ${idx + 1}`}
+                          className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
         {/* Finishing options */}
         {/* <section className="space-y-6">

@@ -14,7 +14,9 @@ import low_carbon_steel from '@/assects/Images/low_carban_steel.png';
 import stainless_steel from '@/assects/Images/stainless_steel.png';
 import alloy_steel from '@/assects/Images/alloy_steel.png';
 import titanium from '@/assects/Images/titanium.png';
-
+import Exm01 from '@/assects/Images/Turn_Ex_01.jpg';
+import Exm02 from '@/assects/Images/Turn_Ex_02.jpg';
+import Exm03 from '@/assects/Images/Turn_Ex_04.jpeg';
 
 const CNCTurning = () => {
   // Simple slideshow for hero background
@@ -313,7 +315,7 @@ const CNCTurning = () => {
           </div>
         </section>
 
-        {/* About CNC Turning */}
+        {/* About CNC Turning
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold text-white">What is CNC Turning?</h2>
           <p className="text-gray-300 max-w-3xl">
@@ -326,7 +328,27 @@ const CNCTurning = () => {
             and other details in the same clamping. This improves accuracy and reduces total lead time for your turned
             components.
           </p>
-        </section>
+        </section> */}
+        {/* Gallery */}
+                <div className="my-12">
+                  <h2 className="text-3xl font-bold text-white mb-6">CNC Turning Examples</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[
+                      Exm01,
+                      Exm02,
+                      Exm03
+                    ].map((image, idx) => (
+                      <div key={idx} className="rounded-xl overflow-hidden border border-[#301B3F]/30 hover:border-[#720455] transition-all duration-300 group">
+                        <img 
+                          src={image}
+                          alt={`CNC turning example ${idx + 1}`}
+                          className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
         {/* CTA */}
         <section className="rounded-3xl bg-gradient-to-r from-[#301B3F] via-[#720455] to-[#910A67] p-8 sm:p-10 text-white space-y-4">

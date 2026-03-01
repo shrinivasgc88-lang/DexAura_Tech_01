@@ -11,9 +11,9 @@ import automobile03 from '@/assects/Images/cnc_m04-03.jpg';
 import med01 from '@/assects/Images/cnc_m01-1.jpeg';
 import med02 from '@/assects/Images/cnc_m01-1.jpeg';
 import med03 from '@/assects/Images/cnc_m01-1.jpeg';
-import robo01 from '@/assects/Images/cnc_m01-1.jpeg';
-import robo02 from '@/assects/Images/cnc_m01-1.jpeg';
-import robo03 from '@/assects/Images/cnc_m01-1.jpeg';
+import robo01 from '@/assects/Images/cnc_m07.jpg';
+import robo02 from '@/assects/Images/cnc_mill_01.jpg';
+import robo03 from '@/assects/Images/cnc_m03.jpg';
 import c_electronics01 from '@/assects/Images/cnc_m01-1.jpeg';
 import c_electronics02 from '@/assects/Images/cnc_m01-1.jpeg';
 import c_electronics03 from '@/assects/Images/cnc_m01-1.jpeg';
@@ -302,9 +302,7 @@ const Industries = () => {
       tagline: 'Enabling the Future of Intelligent Machines',
       heroImage: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1200&h=600&fit=crop',
       galleryImages: [
-        'https://images.unsplash.com/photo-1563207153-f403bf289096?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1561144257-e32e8eeb6c4b?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1518314916381-77a37c2a49ae?w=600&h=400&fit=crop'
+        robo01,robo02,robo03
       ],
       description: 'Precision components for robotics, automation systems, and mechatronic devices. From collaborative robots to industrial automation, we manufacture the mechanical and structural components that bring robotic systems to life.',
       

@@ -8,6 +8,10 @@ import hero from '@/assects/Images/3D_Printing_hero.png';
 import SLM from '@/assects/Images/SLM.png';
 import SLS from '@/assects/Images/SLS.png';
 import FDM from '@/assects/Images/FDM.jpg';
+import D3_01 from '@/assects/Images/3d_01.png';
+import D3_02 from '@/assects/Images/3d_02.png';
+import D3_03 from '@/assects/Images/3d_03.png';
+
 const ThreeDPrinting = () => {
   const navigate = useNavigate();
 
@@ -566,9 +570,9 @@ const ThreeDPrinting = () => {
           <h2 className="text-3xl font-bold text-white mb-6">3D Printing Examples</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=600&h=400&fit=crop',
-              'https://images.unsplash.com/photo-1612832021824-601a4dc8f9a7?w=600&h=400&fit=crop',
-              'https://images.unsplash.com/photo-1581092162384-8987c1d64718?w=600&h=400&fit=crop'
+              D3_01,
+              D3_02,
+              D3_03
             ].map((image, idx) => (
               <div key={idx} className="rounded-xl overflow-hidden border border-[#301B3F]/30 hover:border-[#720455] transition-all duration-300 group">
                 <img 
