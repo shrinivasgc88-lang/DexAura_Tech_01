@@ -149,11 +149,11 @@ const Footer = () => {
                   Quality & Compliance
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link to="/blog" className="text-gray-400 hover:text-[#910A67] transition-colors text-sm">
                   Resources & Blog
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link to="/instant-quote" className="text-gray-400 hover:text-[#910A67] transition-colors text-sm">
                   Instant Quote

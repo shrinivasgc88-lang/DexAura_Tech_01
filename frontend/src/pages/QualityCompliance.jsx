@@ -5,6 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import inspection01 from '@/assects/Images/Inspection01.jpg';
 import inspection02 from '@/assects/Images/Inspection02.jpg';
 import inspection03 from '@/assects/Images/Inspection03-1.jpg';
+import med from '@/assects/Images/Medical_Devices.png';
+import aero from '@/assects/Images/Aerospace.png';
+import auto from '@/assects/Images/Automobile_&_EV.png';
 
 const QualityCompliance = () => {
   const navigate = useNavigate();
@@ -27,7 +30,7 @@ const QualityCompliance = () => {
     {
       name: 'ISO 13485:2016',
       icon: <Shield className="w-8 h-8" />,
-      image: 'https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?w=800&h=500&fit=crop',
+      image: med,
       description: 'Medical devices quality management system ensuring compliance with regulatory requirements for medical device manufacturing and distribution.',
       scope: 'Medical device components, assemblies, and finished devices',
       benefits: [
@@ -40,7 +43,7 @@ const QualityCompliance = () => {
     {
       name: 'AS9100D',
       icon: <Target className="w-8 h-8" />,
-      image: 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=800&h=500&fit=crop',
+      image: aero,
       description: 'Aerospace quality management system based on ISO 9001 with additional aerospace-specific requirements for safety and reliability.',
       scope: 'Aerospace components and critical flight-ready parts',
       benefits: [
@@ -53,7 +56,7 @@ const QualityCompliance = () => {
     {
       name: 'IATF 16949:2016',
       icon: <FileCheck className="w-8 h-8" />,
-      image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800&h=500&fit=crop',
+      image: auto,
       description: 'Automotive quality management system focusing on defect prevention, reduction of variation, and waste in the supply chain.',
       scope: 'Automotive components and production parts',
       benefits: [

@@ -2,23 +2,29 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import aero from '@/assects/Images/Aerospace.png';
+import auto from '@/assects/Images/Automobile_&_EV.png';
+import med from '@/assects/Images/Medical_Devices.png';
+import robo from '@/assects/Images/Robotics_&_Automation.png';
+import c_electronics from '@/assects/Images/consumer_electronics.png';
+import industry from '@/assects/Images/Industrial.png';
 import aero01 from '@/assects/Images/cnc_m01-1.jpeg';
 import aero02 from '@/assects/Images/cnc_m01-2.jpeg';
 import aero03 from '@/assects/Images/cnc_m01-3.jpeg';
 import automobile01 from '@/assects/Images/cnc_m04-01.jpg';
 import automobile02 from '@/assects/Images/cnc_m04-02.jpg';
 import automobile03 from '@/assects/Images/cnc_m04-03.jpg';
-import med01 from '@/assects/Images/cnc_m01-1.jpeg';
-import med02 from '@/assects/Images/cnc_m01-1.jpeg';
-import med03 from '@/assects/Images/cnc_m01-1.jpeg';
+import med01 from '@/assects/Images/med_01.png';
+import med02 from '@/assects/Images/med_02.png';
+import med03 from '@/assects/Images/med_03.png';
 import robo01 from '@/assects/Images/cnc_m07.jpg';
 import robo02 from '@/assects/Images/cnc_mill_01.jpg';
 import robo03 from '@/assects/Images/cnc_m03.jpg';
-import c_electronics01 from '@/assects/Images/cnc_m01-1.jpeg';
-import c_electronics02 from '@/assects/Images/cnc_m01-1.jpeg';
-import c_electronics03 from '@/assects/Images/cnc_m01-1.jpeg';
-import industry01 from '@/assects/Images/cnc_m01-1.jpeg';
-import industry02 from '@/assects/Images/cnc_m01-1.jpeg';
+import c_electronics01 from '@/assects/Images/c-electronics_01.png';
+import c_electronics02 from '@/assects/Images/c-electronics_02.png';
+import c_electronics03 from '@/assects/Images/c-electronics_03.png';
+import industry01 from '@/assects/Images/Industry_01.png';
+import industry02 from '@/assects/Images/Industry_02.png';
 import industry03 from '@/assects/Images/cnc_m01-1.jpeg';
 import { Plane, Car, Heart, Cpu, Wrench, Package, CheckCircle, ArrowRight, Award, Clock, Shield } from 'lucide-react';
 
@@ -58,7 +64,7 @@ const Industries = () => {
       icon: <Plane className="w-12 h-12" />,
       name: 'Aerospace & Defense',
       tagline: 'Mission-Critical Precision for Flight-Ready Components',
-      heroImage: 'https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=1200&h=600&fit=crop',
+      heroImage: aero,
       galleryImages: [
         aero01,aero02,aero03,
       ],
@@ -138,7 +144,7 @@ const Industries = () => {
       icon: <Car className="w-12 h-12" />,
       name: 'Automotive & EV',
       tagline: 'Accelerating Innovation in Traditional and Electric Vehicles',
-      heroImage: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&h=600&fit=crop',
+      heroImage: auto,
       galleryImages: [
         automobile01,automobile02,automobile03
       ],
@@ -218,11 +224,9 @@ const Industries = () => {
       icon: <Heart className="w-12 h-12" />,
       name: 'Medical Devices',
       tagline: 'Precision Manufacturing for Life-Saving Healthcare Solutions',
-      heroImage: 'https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?w=1200&h=600&fit=crop',
+      heroImage: med,
       galleryImages: [
-        'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1579154204601-01588f351e67?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?w=600&h=400&fit=crop'
+        med01,med02,med03
       ],
       description: 'ISO 13485:2016 certified manufacturing for medical devices and healthcare products. We support the entire product lifecycle from concept prototypes to commercial production with full regulatory compliance and traceability.',
       
@@ -300,7 +304,7 @@ const Industries = () => {
       icon: <Cpu className="w-12 h-12" />,
       name: 'Robotics & Automation',
       tagline: 'Enabling the Future of Intelligent Machines',
-      heroImage: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1200&h=600&fit=crop',
+      heroImage: robo,
       galleryImages: [
         robo01,robo02,robo03
       ],
@@ -379,11 +383,9 @@ const Industries = () => {
       icon: <Package className="w-12 h-12" />,
       name: 'Consumer Electronics',
       tagline: 'Precision Enclosures and Components for Connected Devices',
-      heroImage: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1200&h=600&fit=crop',
+      heroImage: c_electronics,
       galleryImages: [
-        'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1519558260268-cde7e03a0152?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&h=400&fit=crop'
+        c_electronics01,c_electronics02,c_electronics03
       ],
       description: 'High-quality enclosures, brackets, and structural components for consumer electronics. From smartphones to smart home devices, we deliver the precision and aesthetics demanded by modern consumer products.',
       
@@ -461,11 +463,9 @@ const Industries = () => {
       icon: <Wrench className="w-12 h-12" />,
       name: 'Industrial & Manufacturing',
       tagline: 'Durable Components for Heavy-Duty Applications',
-      heroImage: 'https://images.unsplash.com/photo-1565114925726-28c3e671fa5f?w=1200&h=600&fit=crop',
+      heroImage: industry,
       galleryImages: [
-        'https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=600&h=400&fit=crop'
+        industry01,industry02,industry03
       ],
       description: 'Robust manufacturing solutions for industrial equipment, machinery, and tooling. We produce the components that keep factories running, from custom fixtures to replacement parts for legacy equipment.',
       
