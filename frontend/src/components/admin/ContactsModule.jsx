@@ -60,6 +60,20 @@ const ContactsModule = () => {
     return colors[status] || 'bg-gray-500';
   };
 
+  // human readable labels for submission types (includes live_chat)
+  const submissionTypeLabel = (type) => {
+    const labels = {
+      general: 'General Inquiry',
+      quote: 'Quote Request',
+      technical: 'Technical Support',
+      quality: 'Quality & Compliance',
+      order: 'Order Status',
+      partnership: 'Partnership',
+      live_chat: 'Live Chat'
+    };
+    return labels[type] || type;
+  };
+
   const handleMarkAsContacted = async (contactId) => {
     try {
       await api.patch(`/admin/contact-submissions/${contactId}`, null, {
@@ -177,7 +191,7 @@ const ContactsModule = () => {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="border-gray-600 text-gray-300">
-                          {contact.submission_type}
+                          {submissionTypeLabel(contact.submission_type)}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -264,6 +278,23 @@ const ContactsModule = () => {
                   <p className="text-white">{selectedContact.monthly_volume}</p>
                 </div>
               )}
+
+              {selectedContact.chat_history && selectedContact.chat_history.length > 0 && (
+                <div>
+                  <label className="text-sm text-gray-400">Chat History</label>
+                  <div className="mt-2 max-h-56 overflow-y-auto bg-[#252525] rounded border border-gray-800 p-3">
+                    {selectedContact.chat_history.map((msg, idx) => (
+                      <div key={idx} className="mb-2">
+                        <span className="text-xs text-gray-500">
+                          {new Date(msg.timestamp).toLocaleString()} • {msg.sender}
+                        </span>
+                        <p className="text-white text-sm mt-1">{msg.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="text-sm text-gray-400 block mb-2">Add Follow-up Note</label>
                 <Textarea

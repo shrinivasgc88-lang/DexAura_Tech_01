@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Mail, Phone, MapPin, Clock, MessageSquare, Send, CheckCircle, Headphones, FileText, X, User } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, MessageSquare, Send, CheckCircle, Headphones, FileText, X, User, Calendar } from 'lucide-react';
 import api from '@/utils/api';
 import { toast } from 'sonner';
 import { COUNTRIES } from '@/utils/countries';
+import get_in_touch from '@/assects/Images/get_in_touch.png';
+import bengaluru from '@/assects/Images/bengaluru_city.png';
 
 const Contact = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -44,10 +48,10 @@ const Contact = () => {
     {
       icon: <Phone className="w-6 h-6" />,
       title: 'Phone',
-      primary: '+91 886 735 7592',
+      primary: '+91 944 912 1791',
       secondary: 'Mon-Fri: 9 AM - 6 PM IST',
       description: 'Speak directly with our team',
-      action: () => window.open('tel:+918867357592')
+      action: () => window.open('tel:+919449121791')
     },
     {
       icon: <Mail className="w-6 h-6" />,
@@ -66,13 +70,22 @@ const Contact = () => {
       action: () => setShowChat(true)
     },
     {
-      icon: <MapPin className="w-6 h-6" />,
-      title: 'Visit Us',
-      primary: 'Bengaluru, Karnataka',
-      secondary: 'India 560001',
-      description: 'Schedule a facility tour',
-      action: () => navigate('/contact')
+      icon: <Calendar className="w-6 h-6" />,
+      title: 'Schedule Call',
+      primary: 'Book 30 min',
+      secondary: 'Schedule a call with our team',
+      description: 'Choose a convenient time for a 30-minute meeting',
+      action: () => window.open('https://calendly.com/shrinivas8867/30min', '_blank', 'noopener,noreferrer')
     }
+    // ,
+    // {
+    //   icon: <MapPin className="w-6 h-6" />,
+    //   title: 'Visit Us',
+    //   primary: 'Bengaluru, Karnataka',
+    //   secondary: 'India 560001',
+    //   description: 'Schedule a facility tour',
+    //   action: () => navigate('/contact')
+    // }
   ];
 
   const departments = [
@@ -141,7 +154,7 @@ const Contact = () => {
           {/* Hero Image */}
           <div className="max-w-5xl mx-auto rounded-2xl overflow-hidden border border-[#301B3F]/30 mb-8">
             <img 
-              src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1200&h=500&fit=crop"
+              src={get_in_touch}
               alt="Contact our team"
               className="w-full h-[400px] object-cover"
               loading="eager"
@@ -339,7 +352,7 @@ const Contact = () => {
               <div className="bg-[#1a1a1a] border border-[#301B3F]/30 rounded-xl overflow-hidden">
                 <div className="relative h-64">
                   <img 
-                    src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&h=400&fit=crop"
+                    src={bengaluru}
                     alt="Bengaluru location"
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -433,6 +446,8 @@ const LiveChatModal = ({
   newMessage,
   setNewMessage
 }) => {
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatSubmissionId, setChatSubmissionId] = useState(null);
   const messagesEndRef = useRef(null);
   const [isTyping, setIsTyping] = useState(false);
 
@@ -444,24 +459,49 @@ const LiveChatModal = ({
     scrollToBottom();
   }, [messages]);
 
-  const handleStartChat = (e) => {
+  const handleStartChat = async (e) => {
     e.preventDefault();
+    console.log('[CHAT] start button clicked', chatDetails);
     if (chatDetails.name && chatDetails.email) {
+      setChatLoading(true);
+      // immediately switch to chat view so UI is responsive
       setChatStep('chat');
-      // Add welcome message
+
+      // record the chat request in the database so admins can see it
+      try {
+        const res = await api.post('/contact', {
+          submission_type: 'live_chat',
+          name: chatDetails.name,
+          email: chatDetails.email,
+          message: `Started live chat (subject: ${chatDetails.subject})`,
+        });
+        setChatSubmissionId(res.data.id);
+        toast.success('Chat request logged - our team will review it shortly');
+      } catch (err) {
+        console.error('Failed to log chat request', err);
+        // don't block the chat experience if logging fails
+        toast.error('Unable to log chat request, please try again later');
+      } finally {
+        setChatLoading(false);
+      }
+
+      // Add welcome message after switching
       setMessages([
         {
           id: 1,
           sender: 'admin',
-          text: `Hello ${chatDetails.name}! Welcome to DexAura Manufacturing. How can I help you today?`,
+          text: `Thanks for reaching out, ${chatDetails.name}. We've logged your information and our support team is working on this option – we'll contact you soon.`,
           timestamp: new Date().toISOString()
         }
       ]);
       toast.success('Connected to support team!');
+    } else {
+      // in case fields missing we can show an error
+      toast.error('Please enter both name and email before starting chat.');
     }
   };
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (newMessage.trim()) {
       const userMessage = {
@@ -473,12 +513,25 @@ const LiveChatModal = ({
       
       setMessages([...messages, userMessage]);
       setNewMessage('');
+
+      // persist message if we have a submission record id
+      if (chatSubmissionId) {
+        try {
+          await api.patch(`/contact/${chatSubmissionId}/chat`, {
+            sender: 'user',
+            text: userMessage.text,
+            timestamp: userMessage.timestamp
+          });
+        } catch (err) {
+          console.error('Failed to append chat message', err);
+        }
+      }
       
       // Simulate admin typing
       setIsTyping(true);
       
       // Simulate admin response after 2-3 seconds
-      setTimeout(() => {
+      setTimeout(async () => {
         setIsTyping(false);
         const adminResponse = getAutoResponse(newMessage);
         const adminMessage = {
@@ -488,6 +541,18 @@ const LiveChatModal = ({
           timestamp: new Date().toISOString()
         };
         setMessages(prev => [...prev, adminMessage]);
+        // also save admin message to history so admin can review conversation later
+        if (chatSubmissionId) {
+          try {
+            await api.patch(`/contact/${chatSubmissionId}/chat`, {
+              sender: 'admin',
+              text: adminMessage.text,
+              timestamp: adminMessage.timestamp
+            });
+          } catch (err) {
+            console.error('Failed to append admin chat message', err);
+          }
+        }
       }, 2000 + Math.random() * 1000);
     }
   };
@@ -529,7 +594,7 @@ const LiveChatModal = ({
 
   return (
     <Dialog open={showChat} onOpenChange={handleCloseChat}>
-      <DialogContent className="bg-[#1a1a1a] border-[#301B3F] max-w-md p-0 gap-0" data-testid="live-chat-modal">
+      <DialogContent hideDefaultClose className="bg-[#1a1a1a] border-[#301B3F] max-w-md p-0 gap-0" data-testid="live-chat-modal">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#720455] to-[#910A67] p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -566,6 +631,7 @@ const LiveChatModal = ({
                   placeholder="Your name"
                   className="bg-[#151515] border-[#301B3F] text-white"
                   data-testid="chat-name-input"
+                  disabled={chatLoading}
                 />
               </div>
 
@@ -579,6 +645,7 @@ const LiveChatModal = ({
                   placeholder="your.email@company.com"
                   className="bg-[#151515] border-[#301B3F] text-white"
                   data-testid="chat-email-input"
+                  disabled={chatLoading}
                 />
               </div>
 
@@ -600,10 +667,11 @@ const LiveChatModal = ({
 
               <Button
                 type="submit"
+                disabled={chatLoading || !(chatDetails.name && chatDetails.email)}
                 className="w-full bg-gradient-to-r from-[#720455] to-[#910A67] hover:from-[#910A67] hover:to-[#720455] text-white py-6 rounded-full font-semibold"
                 data-testid="start-chat-btn"
               >
-                Start Chat
+                {chatLoading ? 'Connecting...' : 'Start Chat'}
                 <MessageSquare className="ml-2 w-4 h-4" />
               </Button>
             </form>

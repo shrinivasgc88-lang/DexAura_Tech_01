@@ -8,6 +8,8 @@ import inspection03 from '@/assects/Images/Inspection03-1.jpg';
 import med from '@/assects/Images/Medical_Devices.png';
 import aero from '@/assects/Images/Aerospace.png';
 import auto from '@/assects/Images/Automobile_&_EV.png';
+import quality_compliance from '@/assects/Images/Quality_&_Compliance.png';
+import iso_9001_2015 from '@/assects/Images/iso_9001_2015.png';
 
 const QualityCompliance = () => {
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ const QualityCompliance = () => {
     {
       name: 'ISO 9001:2015',
       icon: <Award className="w-8 h-8" />,
-      image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&h=500&fit=crop',
+      image: iso_9001_2015,
       description: 'International standard for quality management systems ensuring consistent quality, customer satisfaction, and continuous improvement across all operations.',
       scope: 'All manufacturing processes and quality management systems',
       benefits: [
@@ -174,7 +176,7 @@ const QualityCompliance = () => {
           {/* Hero Image */}
           <div className="max-w-5xl mx-auto rounded-2xl overflow-hidden border border-[#301B3F]/30">
             <img 
-              src="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1200&h=600&fit=crop"
+              src={quality_compliance}
               alt="Quality inspection equipment"
               className="w-full h-[400px] object-cover"
               loading="eager"

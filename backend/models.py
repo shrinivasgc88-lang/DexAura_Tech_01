@@ -160,7 +160,7 @@ class Notification(BaseModel):
 class ContactSubmission(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    submission_type: str  # "high_volume", "general", "quote_request"
+    submission_type: str  # "high_volume", "general", "quote_request", "live_chat", etc.
     name: str
     email: EmailStr
     phone: Optional[str] = None
@@ -169,6 +169,7 @@ class ContactSubmission(BaseModel):
     monthly_volume: Optional[str] = None
     message: str
     status: str = "new"
+    chat_history: List[Dict[str, Any]] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class AuditLog(BaseModel):

@@ -25,7 +25,7 @@ import c_electronics02 from '@/assects/Images/c-electronics_02.png';
 import c_electronics03 from '@/assects/Images/c-electronics_03.png';
 import industry01 from '@/assects/Images/Industry_01.png';
 import industry02 from '@/assects/Images/Industry_02.png';
-import industry03 from '@/assects/Images/cnc_m01-1.jpeg';
+import industry03 from '@/assects/Images/Industry_03.png';
 import { Plane, Car, Heart, Cpu, Wrench, Package, CheckCircle, ArrowRight, Award, Clock, Shield } from 'lucide-react';
 
 const Industries = () => {

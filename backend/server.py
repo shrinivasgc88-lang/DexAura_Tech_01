@@ -12,6 +12,9 @@ from datetime import datetime, timezone
 import uuid
 import io
 
+# used directly in this module
+from pydantic import BaseModel, Field
+
 from models import (
     Customer, CustomerCreate, CustomerLogin, Quote, QuoteCreate,
     Order, OrderCreate, OrderItem, Attachment, InspectionRequest,
@@ -586,10 +589,18 @@ async def get_blog_post(slug: str):
     return post
 
 # ===== CONTACT ROUTES =====
+
+# helper type used for extending chat logs
+class ChatMessage(BaseModel):
+    sender: str  # "user" or "admin"
+    text: str
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 @api_router.post("/contact")
 async def submit_contact(submission: ContactSubmission):
     submission_doc = submission.model_dump()
     submission_doc['created_at'] = submission_doc['created_at'].isoformat()
+    # chat_history should already be an empty list
     await db.contact_submissions.insert_one(submission_doc)
     
     await email_service.notify_admin_contact_submission(submission_doc)
@@ -606,6 +617,19 @@ async def submit_contact(submission: ContactSubmission):
     await db.notifications.insert_one(notif_doc)
     
     return {"message": "Submission received", "id": submission.id}
+
+@api_router.patch("/contact/{submission_id}/chat")
+async def append_chat_message(submission_id: str, message: ChatMessage):
+    # store the new message in the submission document for later review
+    msg_doc = message.model_dump()
+    msg_doc['timestamp'] = msg_doc['timestamp'].isoformat()
+    result = await db.contact_submissions.update_one(
+        {"id": submission_id},
+        {"$push": {"chat_history": msg_doc}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Contact submission not found")
+    return {"message": "Chat message appended"}
 
 # ===== NOTIFICATION ROUTES =====
 @api_router.get("/notifications")
