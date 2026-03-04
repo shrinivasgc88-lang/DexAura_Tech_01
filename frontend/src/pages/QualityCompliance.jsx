@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import LazyImage from '@/components/ui/lazy-image';
 import { CheckCircle, Award, Shield, FileCheck, Microscope, ClipboardCheck, Target, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -175,11 +176,10 @@ const QualityCompliance = () => {
 
           {/* Hero Image */}
           <div className="max-w-5xl mx-auto rounded-2xl overflow-hidden border border-[#301B3F]/30">
-            <img 
+            <LazyImage 
               src={quality_compliance}
               alt="Quality inspection equipment"
               className="w-full h-[400px] object-cover"
-              loading="eager"
             />
           </div>
         </div>

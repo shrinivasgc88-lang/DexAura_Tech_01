@@ -498,6 +498,7 @@ const BlogModule = () => {
                         src={formData.hero_image}
                         alt="Hero preview"
                         className="w-full h-48 object-cover"
+                        loading="lazy"
                       />
                       <Button
                         type="button"

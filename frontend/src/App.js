@@ -38,6 +38,14 @@ const LoadingFallback = () => (
 );
 
 function App() {
+  // guard: some third‑party libs or legacy code might insert raw <img> tags
+  // without the `loading` attribute.  The following effect adds
+  // `loading="lazy"` to any image that doesn't already specify it.
+  React.useEffect(() => {
+    const imgs = document.querySelectorAll('img:not([loading])');
+    imgs.forEach(i => i.setAttribute('loading', 'lazy'));
+  }, []);
+
   return (
     <AuthProvider>
       <BrowserRouter>

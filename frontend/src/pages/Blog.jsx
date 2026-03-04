@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Clock, ArrowRight, Calendar, Tag, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import api from '@/utils/api';
+import LazyImage from '@/components/ui/lazy-image';
 
 const Blog = () => {
   const navigate = useNavigate();
@@ -71,11 +72,10 @@ const Blog = () => {
 
           {/* Hero Image */}
           <div className="max-w-5xl mx-auto rounded-2xl overflow-hidden border border-[#301B3F]/30">
-            <img 
-              src="https://images.unsplash.com/photo-1456324504439-367cee3b3c32?w=1200&h=500&fit=crop"
+            <LazyImage 
+              src="https://images.unsplash.com/photo-1456324504439-367cee3b3b3c32?w=1200&h=500&fit=crop"
               alt="Manufacturing resources"
               className="w-full h-[400px] object-cover"
-              loading="eager"
             />
           </div>
         </div>
@@ -126,7 +126,7 @@ const Blog = () => {
                   <div className="bg-[#1a1a1a] border border-[#301B3F]/30 rounded-2xl overflow-hidden hover:border-[#720455] transition-all duration-300 hover:shadow-xl hover:shadow-[#720455]/20">
                     <div className="grid grid-cols-1 lg:grid-cols-2">
                       <div className="relative h-80 lg:h-auto overflow-hidden">
-                        <img 
+                        <LazyImage 
                           src={categoryImages[filteredPosts[0].category] || 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=500&fit=crop'}
                           alt={filteredPosts[0].title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

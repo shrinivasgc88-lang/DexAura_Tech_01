@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import LazyImage from '@/components/ui/lazy-image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, ArrowRight, Zap, Box, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -323,11 +324,10 @@ const ThreeDPrinting = () => {
 
         {/* Hero Image */}
         <div className="mb-12 rounded-2xl overflow-hidden border border-[#301B3F]/30">
-          <img 
+          <LazyImage 
             src={hero}
             alt="3D Printing Technology"
             className="w-full h-[400px] object-cover"
-            loading="eager"
           />
         </div>
 

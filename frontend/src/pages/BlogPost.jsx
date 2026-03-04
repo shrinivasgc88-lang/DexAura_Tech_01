@@ -276,11 +276,10 @@ const BlogPost = () => {
         {/* Hero Image */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl mb-12">
           <div className="rounded-2xl overflow-hidden border border-[#301B3F]/30">
-            <img 
+            <LazyImage 
               src={images[0]}
               alt={post.title}
               className="w-full h-[500px] object-cover"
-              loading="eager"
             />
           </div>
         </div>

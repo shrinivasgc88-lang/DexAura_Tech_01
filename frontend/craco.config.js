@@ -1,6 +1,7 @@
 // craco.config.js
 const path = require("path");
 require("dotenv").config();
+const fs = require("fs");
 
 // Environment variable overrides
 const config = {
@@ -14,8 +15,19 @@ let babelMetadataPlugin;
 let setupDevServer;
 
 if (config.enableVisualEdits) {
-  babelMetadataPlugin = require("./plugins/visual-edits/babel-metadata-plugin");
-  setupDevServer = require("./plugins/visual-edits/dev-server-setup");
+  try {
+    const veDir = path.resolve(__dirname, './plugins/visual-edits');
+    const babelFile = path.join(veDir, 'babel-metadata-plugin.js');
+    const devServerFile = path.join(veDir, 'dev-server-setup.js');
+    if (fs.existsSync(babelFile) && fs.existsSync(devServerFile)) {
+      babelMetadataPlugin = require("./plugins/visual-edits/babel-metadata-plugin");
+      setupDevServer = require("./plugins/visual-edits/dev-server-setup");
+    } else {
+      console.warn('Visual edits plugin files missing; visual editing disabled.');
+    }
+  } catch (err) {
+    console.warn('Failed to load visual-edits plugins, continuing without them:', err.message);
+  }
 }
 
 // Conditionally load health check modules only if enabled

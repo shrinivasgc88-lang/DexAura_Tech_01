@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import LazyImage from '@/components/ui/lazy-image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, ArrowRight, Flame, Droplet, Hammer, Sparkles, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -291,11 +292,10 @@ const SpecialProcess = () => {
 
         {/* Hero Image */}
         <div className="mb-12 rounded-2xl overflow-hidden border border-[#301B3F]/30">
-          <img 
+          <LazyImage 
             src={SP_hero}
             alt="Special manufacturing processes"
             className="w-full h-[400px] object-cover"
-            loading="eager"
           />
         </div>
 

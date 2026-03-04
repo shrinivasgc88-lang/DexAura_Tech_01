@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import LazyImage from '@/components/ui/lazy-image';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -153,11 +154,10 @@ const Contact = () => {
 
           {/* Hero Image */}
           <div className="max-w-5xl mx-auto rounded-2xl overflow-hidden border border-[#301B3F]/30 mb-8">
-            <img 
+            <LazyImage 
               src={get_in_touch}
               alt="Contact our team"
               className="w-full h-[400px] object-cover"
-              loading="eager"
             />
           </div>
         </div>
