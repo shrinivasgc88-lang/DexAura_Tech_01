@@ -31,6 +31,14 @@ const Login = lazy(() => import('@/pages/Login'));
 const Teamspace = lazy(() => import('@/pages/Teamspace'));
 const Admin = lazy(() => import('@/pages/Admin'));
 
+// New Dashboard Components
+const CustomerDashboard = lazy(() => import('@/pages/customer/Dashboard'));
+const SupplierDashboard = lazy(() => import('@/pages/supplier/Dashboard'));
+const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
+
+// Main Dashboard component that redirects based on role
+const Dashboard = lazy(() => import('@/components/Dashboard'));
+
 const LoadingFallback = () => (
   <div className="min-h-screen bg-[#151515] flex items-center justify-center">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#910A67]"></div>
@@ -87,6 +95,12 @@ const ConditionalLayout = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/teamspace" element={<Teamspace />} />
             <Route path="/admin" element={<Admin />} />
+            
+            {/* New Dashboard Routes */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/customer" element={<CustomerDashboard />} />
+            <Route path="/dashboard/admin" element={<AdminDashboard />} />
+            <Route path="/dashboard/supplier" element={<SupplierDashboard />} />
           </Routes>
         </Suspense>
       </main>

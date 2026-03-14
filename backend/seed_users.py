@@ -29,31 +29,55 @@ async def seed_users():
         
         # Define test users with pre-generated bcrypt hashes
         # These are bcrypt hashes for the given passwords
-        # Password: admin123 -> Hash: $2b$12$R5V3B3785bG8S7qjT./yk.DDP3eNIFrfYj1A/1YUVvoU1aTanudgm
-        # Password: test123 -> Hash: $2b$12$prlQv/wo/cTuavWdPbeafuMP.grHa.l17ebrErhPFj3P5JATNZvaC
-        # Password: password123 -> Hash: $2b$12$pzOXyPryXjdYraXfvIIBI.B8h7OTjdq2eAlUlHlCOf2994fUoea1.
+        # Password: admin123 -> Hash: $2b$12$iqc9GpDnDMVQd80OHcSpaeHicOI9PAfF.NKyUTzprjq/5mDhhg10W
+        # Password: owner123 -> Hash: $2b$12$sLWtEIfkSi0YARSNNWE55efMoPURZVIfCqiSi.JQAYsVUo8f9GssK
+        # Password: buyer123 -> Hash: $2b$12$na.i8LJnQqdExAC2Doy5ReaRNBdVHhz/KkFDvjYtgJLok8ngo9NFO
+        # Password: supplier123 -> Hash: $2b$12$2200z20mBtM/tMHJsJUbzeNHqVp7SibgyxIlGsyaNXAr8sxlg4f62
+        # Password: viewer123 -> Hash: $2b$12$MZ/noH/iYmsNaa7e0z3Yx.0NU214wR5yk2pYtJhu.m.f5VL.fObgi
+        # Password: customer123 -> Hash: $2b$12$Plg/l2H5Cn4efiEzxoHe3ObDPaifvFKlaV9STjTAlwFMVRQWLaisq
         
         test_users = [
             {
                 "email": "admin@dexaura.com",
-                "password_hash": "$2b$12$R5V3B3785bG8S7qjT./yk.DDP3eNIFrfYj1A/1YUVvoU1aTanudgm",
+                "password_hash": "$2b$12$iqc9GpDnDMVQd80OHcSpaeHicOI9PAfF.NKyUTzprjq/5mDhhg10W",
                 "name": "Admin User",
                 "role": "ADMIN",
                 "company": "DexAura Technologies"
             },
             {
-                "email": "test@dexaura.com",
-                "password_hash": "$2b$12$prlQv/wo/cTuavWdPbeafuMP.grHa.l17ebrErhPFj3P5JATNZvaC",
-                "name": "Test User",
-                "role": "BUYER",
-                "company": "Test Company"
+                "email": "owner@dexaura.com",
+                "password_hash": "$2b$12$sLWtEIfkSi0YARSNNWE55efMoPURZVIfCqiSi.JQAYsVUo8f9GssK",
+                "name": "Owner User",
+                "role": "OWNER",
+                "company": "DexAura Technologies"
             },
             {
-                "email": "customer@example.com",
-                "password_hash": "$2b$12$pzOXyPryXjdYraXfvIIBI.B8h7OTjdq2eAlUlHlCOf2994fUoea1.",
-                "name": "John Customer",
+                "email": "buyer@dexaura.com",
+                "password_hash": "$2b$12$na.i8LJnQqdExAC2Doy5ReaRNBdVHhz/KkFDvjYtgJLok8ngo9NFO",
+                "name": "Buyer User",
                 "role": "BUYER",
-                "company": "Example Corp"
+                "company": "Manufacturing Corp"
+            },
+            {
+                "email": "supplier@dexaura.com",
+                "password_hash": "$2b$12$2200z20mBtM/tMHJsJUbzeNHqVp7SibgyxIlGsyaNXAr8sxlg4f62",
+                "name": "Supplier User",
+                "role": "SUPPLIER",
+                "company": "Parts Supplier Inc"
+            },
+            {
+                "email": "viewer@dexaura.com",
+                "password_hash": "$2b$12$MZ/noH/iYmsNaa7e0z3Yx.0NU214wR5yk2pYtJhu.m.f5VL.fObgi",
+                "name": "Viewer User",
+                "role": "VIEWER",
+                "company": "View Only Corp"
+            },
+            {
+                "email": "customer@dexaura.com",
+                "password_hash": "$2b$12$Plg/l2H5Cn4efiEzxoHe3ObDPaifvFKlaV9STjTAlwFMVRQWLaisq",
+                "name": "Customer User",
+                "role": "BUYER",
+                "company": "Customer Company"
             }
         ]
         

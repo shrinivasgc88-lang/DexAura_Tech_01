@@ -7,6 +7,7 @@ from enum import Enum
 class UserRole(str, Enum):
     OWNER = "OWNER"
     BUYER = "BUYER"
+    SUPPLIER = "SUPPLIER"
     VIEWER = "VIEWER"
     ADMIN = "ADMIN"
 
@@ -181,3 +182,15 @@ class AuditLog(BaseModel):
     entity_id: str
     changes: Optional[Dict[str, Any]] = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class QualityReport(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    order_id: str
+    supplier_id: str
+    report_data: Dict[str, Any]  # Flexible structure for quality metrics
+    status: str = "submitted"  # submitted, approved, rejected
+    admin_notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    reviewed_at: Optional[datetime] = None
+    reviewed_by: Optional[str] = None
