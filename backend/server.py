@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import re
 from contextlib import asynccontextmanager
 import logging
 from pathlib import Path
@@ -615,6 +616,13 @@ async def submit_contact(submission: ContactSubmission):
 
     # Build contact submission first so we can link it on the lead
     submission_doc = submission.model_dump()
+
+    # If country isn't explicitly provided, derive it from international phone code (e.g., +91)
+    if not submission_doc.get("country") and submission_doc.get("phone"):
+        match = re.match(r"^(\+\d+)", submission_doc["phone"])
+        if match:
+            submission_doc["country"] = match.group(1)
+
     submission_doc['created_at'] = submission_doc['created_at'].isoformat()
 
     # Create Lead object and link to contact submission id
@@ -804,6 +812,7 @@ async def get_audit_logs(
 
 @api_router.get("/admin/contact-submissions")
 async def get_contact_submissions(
+    status: Optional[str] = None,
     skip: int = 0,
     limit: int = 50,
     current_user: Customer = Depends(get_current_user)
@@ -811,8 +820,13 @@ async def get_contact_submissions(
     if current_user.role != UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="Admin access required")
     
-    total = await db.contact_submissions.count_documents({})
-    submissions = await db.contact_submissions.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    query = {}
+    if status:
+        # Case-insensitive match (e.g., "Qualified" or "qualified")
+        query["status"] = {"$regex": f"^{re.escape(status)}$", "$options": "i"}
+    
+    total = await db.contact_submissions.count_documents(query)
+    submissions = await db.contact_submissions.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
     return {"total": total, "submissions": submissions}
 
@@ -838,6 +852,42 @@ async def update_contact_submission(
         raise HTTPException(status_code=404, detail="Contact submission not found")
     
     return {"message": "Contact submission updated successfully"}
+
+@api_router.post("/admin/contact-submissions/{submission_id}/qualify")
+async def qualify_contact_submission(
+    submission_id: str,
+    current_user: Customer = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    submission = await db.contact_submissions.find_one({"id": submission_id})
+    if not submission:
+        raise HTTPException(status_code=404, detail="Contact submission not found")
+
+    # Create the new lead record
+    lead = Lead(
+        name=submission.get("name"),
+        email=submission.get("email"),
+        phone=submission.get("phone"),
+        company=submission.get("company"),
+        source=submission.get("submission_type") or "contact_form",
+        status=LeadStatus.QUALIFIED,
+        contact_submission_id=submission_id,
+    )
+
+    lead_doc = lead.model_dump()
+    lead_doc["created_at"] = lead_doc["created_at"].isoformat()
+    lead_doc["updated_at"] = lead_doc["updated_at"].isoformat()
+    await db.leads.insert_one(lead_doc)
+
+    # Update the contact submission status so the database reflects qualification
+    await db.contact_submissions.update_one(
+        {"id": submission_id},
+        {"$set": {"status": "Qualified", "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+
+    return {"message": "Contact submission qualified", "lead": lead_doc}
 
 # ===== LEAD MANAGEMENT =====
 @api_router.get("/admin/leads")
@@ -972,6 +1022,27 @@ async def create_meeting(meeting_data: Meeting, current_user: Customer = Depends
     meeting_doc['created_at'] = meeting_doc['created_at'].isoformat()
     await db.meetings.insert_one(meeting_doc)
     return meeting_data
+
+@api_router.patch("/admin/meetings/{meeting_id}")
+async def update_meeting(meeting_id: str, update_data: dict, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    # Only allow updating select fields for security
+    allowed_fields = {"status", "notes", "outcome", "meeting_date", "location", "agenda", "action_items", "attendees", "duration_minutes"}
+    sanitized = {k: v for k, v in update_data.items() if k in allowed_fields}
+    if "meeting_date" in sanitized and isinstance(sanitized["meeting_date"], str):
+        # keep ISO strings
+        sanitized["meeting_date"] = sanitized["meeting_date"]
+
+    sanitized["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    result = await db.meetings.update_one({"id": meeting_id}, {"$set": sanitized})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+
+    updated = await db.meetings.find_one({"id": meeting_id}, {"_id": 0})
+    return updated
 
 @api_router.get("/admin/meetings")
 async def get_meetings(

@@ -116,13 +116,41 @@ const Contact = () => {
     }
   ];
 
+  const getDialCodeFromCountry = (countryCode) => {
+    const country = COUNTRIES.find((c) => c.code === countryCode);
+    return country?.dialCode || countryCode;
+  };
+
+  const getPhoneWithDialCode = (countryCode, phone) => {
+    const dialCode = getDialCodeFromCountry(countryCode);
+    const trimmedPhone = (phone || '').trim();
+
+    if (!trimmedPhone) return trimmedPhone;
+
+    // If phone already includes a + prefix, assume it already includes a dial code
+    if (trimmedPhone.startsWith('+')) return trimmedPhone;
+
+    // If it's already prefixed with the dial code (without +) don't double prefix
+    const plainDial = dialCode.replace(/[^\d]/g, '');
+    if (plainDial && trimmedPhone.startsWith(plainDial)) {
+      return `+${trimmedPhone}`;
+    }
+
+    return `${dialCode}${trimmedPhone}`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
 
     try {
+      const countryDialCode = getDialCodeFromCountry(formData.country);
+      const phoneWithDialCode = getPhoneWithDialCode(formData.country, formData.phone);
+
       await api.post('/contact', {
         ...formData,
+        country: countryDialCode,
+        phone: phoneWithDialCode,
         submission_type: 'general'
       });
       setSubmitted(true);

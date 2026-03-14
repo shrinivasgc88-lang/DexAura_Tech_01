@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
   Users,
   Package,
@@ -27,6 +28,8 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/utils/api';
+import { toast } from 'sonner';
+import { COUNTRIES } from '@/utils/countries';
 import BlogModule from '@/components/admin/BlogModule';
 import UsersModule from '@/components/admin/UsersModule';
 
@@ -35,9 +38,72 @@ const AdminDashboardContent = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [leads, setLeads] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [projects, setProjects] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [metrics, setMetrics] = useState({});
+  const [qualifyingId, setQualifyingId] = useState(null);
+  const [showViewDialog, setShowViewDialog] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [showAddLeadDialog, setShowAddLeadDialog] = useState(false);
+  const [newLead, setNewLead] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    country: '',
+    company: '',
+    message: ''
+  });
+
+  const getDialCodeFromCountry = (countryCode) => {
+    const country = COUNTRIES.find((c) => c.code === countryCode);
+    return country?.dialCode || countryCode;
+  };
+
+  const getCountryNameFromCodeOrDial = (countryValue) => {
+    if (!countryValue) return '';
+
+    // Try matching country ISO code (e.g. "IN")
+    const isoMatch = COUNTRIES.find((c) => c.code.toLowerCase() === countryValue.toLowerCase());
+    if (isoMatch) return isoMatch.name;
+
+    // Try matching dial code (e.g. "+91")
+    const dialMatch = COUNTRIES.find((c) => c.dialCode === countryValue || c.dialCode === `+${countryValue}`);
+    if (dialMatch) return dialMatch.name;
+
+    return '';
+  };
+
+  const getPhoneWithDialCode = (countryCode, phone) => {
+    const dialCode = getDialCodeFromCountry(countryCode);
+    const trimmedPhone = (phone || '').trim();
+
+    if (!trimmedPhone) return trimmedPhone;
+    if (trimmedPhone.startsWith('+')) return trimmedPhone;
+
+    const plainDial = dialCode.replace(/[^\d]/g, '');
+    if (plainDial && trimmedPhone.startsWith(plainDial)) {
+      return `+${trimmedPhone}`;
+    }
+
+    return `${dialCode}${trimmedPhone}`;
+  };
+
+  const [showMeetingsDialog, setShowMeetingsDialog] = useState(false);
+  const [selectedCustomerForMeetings, setSelectedCustomerForMeetings] = useState(null);
+  const [meetings, setMeetings] = useState([]);
+  const [meetingForm, setMeetingForm] = useState({
+    title: '',
+    meeting_date: '',
+    duration_minutes: 60,
+    location: '',
+    agenda: '',
+    notes: ''
+  });
+  const [showMeetingOutcomeDialog, setShowMeetingOutcomeDialog] = useState(false);
+  const [selectedMeetingForOutcome, setSelectedMeetingForOutcome] = useState(null);
+  const [meetingOutcome, setMeetingOutcome] = useState('');
+  const [meetingStatus, setMeetingStatus] = useState('scheduled');
 
   useEffect(() => {
     // Check if user has correct role
@@ -52,14 +118,25 @@ const AdminDashboardContent = () => {
   const fetchDashboardData = async () => {
     try {
       // API calls to fetch admin data
-      const [leadsRes, projectsRes, suppliersRes, metricsRes] = await Promise.all([
-        api.get('/admin/contact_submissions'),
+      const [submissionsRes, qualifiedRes, followUpRes, projectsRes, suppliersRes, metricsRes] = await Promise.all([
+        api.get('/admin/contact-submissions?status=new'),
+        api.get('/admin/contact-submissions?status=Qualified'),
+        api.get('/admin/contact-submissions?status=Follow%20Up'),
         api.get('/admin/projects'),
         api.get('/admin/suppliers'),
         api.get('/dashboard/metrics')  // Use the general dashboard metrics endpoint
       ]);
 
-      setLeads(leadsRes.data.leads || leadsRes.data || []);
+      const newSubmissions = submissionsRes.data.submissions || submissionsRes.data || [];
+      const qualifiedSubmissions = qualifiedRes.data.submissions || qualifiedRes.data || [];
+      const followUpSubmissions = followUpRes.data.submissions || followUpRes.data || [];
+
+      // Combine qualified + follow up and dedupe by id
+      const combinedCustomers = [...qualifiedSubmissions, ...followUpSubmissions];
+      const uniqueCustomersById = Array.from(new Map(combinedCustomers.map((c) => [c.id, c])).values());
+
+      setLeads(newSubmissions);
+      setCustomers(uniqueCustomersById);
       setProjects(projectsRes.data.projects || projectsRes.data || []);
       setSuppliers(suppliersRes.data || []);
       setMetrics(metricsRes.data || {});
@@ -67,9 +144,92 @@ const AdminDashboardContent = () => {
       console.error('Failed to fetch admin dashboard data:', error);
       // Set empty data on error
       setLeads([]);
+      setCustomers([]);
       setProjects([]);
       setSuppliers([]);
       setMetrics({});
+    }
+  };
+
+  const fetchMeetingsForCustomer = async (customer) => {
+    try {
+      const res = await api.get(`/admin/meetings?lead_id=${customer.id}`);
+      setMeetings(res.data || []);
+    } catch (error) {
+      console.error('Failed to fetch meetings:', error);
+      toast.error('Failed to load meetings');
+      setMeetings([]);
+    }
+  };
+
+  const openMeetingsDialog = async (customer) => {
+    setSelectedCustomerForMeetings(customer);
+    setShowMeetingsDialog(true);
+    await fetchMeetingsForCustomer(customer);
+  };
+
+  const createMeeting = async () => {
+    if (!selectedCustomerForMeetings) return;
+
+    try {
+      await api.post('/admin/meetings', {
+        lead_id: selectedCustomerForMeetings.id,
+        title: meetingForm.title,
+        meeting_date: meetingForm.meeting_date,
+        duration_minutes: meetingForm.duration_minutes,
+        location: meetingForm.location,
+        agenda: meetingForm.agenda,
+        notes: meetingForm.notes,
+        status: 'scheduled',
+        created_by: user?.id || 'admin'
+      });
+      toast.success('Meeting created');
+      setMeetingForm({
+        title: '',
+        meeting_date: '',
+        duration_minutes: 60,
+        location: '',
+        agenda: '',
+        notes: ''
+      });
+      await fetchMeetingsForCustomer(selectedCustomerForMeetings);
+    } catch (error) {
+      console.error('Failed to create meeting:', error);
+      toast.error('Failed to create meeting');
+    }
+  };
+
+  const updateMeetingOutcome = async () => {
+    if (!selectedMeetingForOutcome) return;
+    try {
+      await api.patch(`/admin/meetings/${selectedMeetingForOutcome.id}`, {
+        outcome: meetingOutcome,
+        status: meetingStatus
+      });
+      toast.success('Meeting updated');
+      setShowMeetingOutcomeDialog(false);
+      setSelectedMeetingForOutcome(null);
+      setMeetingOutcome('');
+      setMeetingStatus('scheduled');
+      if (selectedCustomerForMeetings) {
+        await fetchMeetingsForCustomer(selectedCustomerForMeetings);
+      }
+    } catch (error) {
+      console.error('Failed to update meeting outcome:', error);
+      toast.error('Failed to update outcome');
+    }
+  };
+
+  const markAsFollowUp = async (customer) => {
+    try {
+      await api.patch(`/admin/contact-submissions/${customer.id}`, null, {
+        params: { status: 'Follow Up' }
+      });
+      toast.success('Status updated to Follow Up');
+      await fetchDashboardData();
+    } catch (error) {
+      console.error('Failed to update status:', error);
+      toast.error('Failed to update status');
     }
   };
 
@@ -141,9 +301,10 @@ const AdminDashboardContent = () => {
 
         {/* Main Dashboard */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9 bg-[#1a1a1a] border-[#301B3F]">
+          <TabsList className="grid w-full grid-cols-10 bg-[#1a1a1a] border-[#301B3F]">
             <TabsTrigger value="overview" className="data-[state=active]:bg-[#910A67] data-[state=active]:text-white text-gray-300">Overview</TabsTrigger>
             <TabsTrigger value="leads" className="data-[state=active]:bg-[#910A67] data-[state=active]:text-white text-gray-300">Leads</TabsTrigger>
+            <TabsTrigger value="customers" className="data-[state=active]:bg-[#910A67] data-[state=active]:text-white text-gray-300">Customers</TabsTrigger>
             <TabsTrigger value="projects" className="data-[state=active]:bg-[#910A67] data-[state=active]:text-white text-gray-300">Projects</TabsTrigger>
             <TabsTrigger value="suppliers" className="data-[state=active]:bg-[#910A67] data-[state=active]:text-white text-gray-300">Suppliers</TabsTrigger>
             <TabsTrigger value="users" className="data-[state=active]:bg-[#910A67] data-[state=active]:text-white text-gray-300">Users</TabsTrigger>
@@ -251,8 +412,11 @@ const AdminDashboardContent = () => {
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-white">Lead Management</h2>
               <div className="flex gap-2">
-                <Badge variant="secondary" className="bg-[#301B3F] text-white">{leads.filter(l => l.status === 'new').length} new</Badge>
-                <Button className="bg-gradient-to-r from-[#720455] to-[#910A67] hover:from-[#910A67] hover:to-[#720455]">
+                <Badge variant="secondary" className="bg-[#301B3F] text-white">{leads.filter(l => l.status?.toLowerCase() === 'new').length} new</Badge>
+                <Button
+                  className="bg-gradient-to-r from-[#720455] to-[#910A67] hover:from-[#910A67] hover:to-[#720455]"
+                  onClick={() => setShowAddLeadDialog(true)}
+                >
                   <UserPlus className="h-4 w-4 mr-2" />
                   Add Lead
                 </Button>
@@ -275,7 +439,7 @@ const AdminDashboardContent = () => {
                           Status
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                          Value
+                          Type
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                           Created
@@ -310,15 +474,146 @@ const AdminDashboardContent = () => {
                             </Badge>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                            ${lead.estimated_value || 0}
+                            {lead.submission_type || '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                            {new Date(lead.created_at).toLocaleDateString()}
+                            {lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex gap-2">
-                              <Button variant="outline" size="sm" className="border-[#301B3F] text-gray-300 hover:bg-[#301B3F] hover:text-white">View</Button>
-                              <Button variant="outline" size="sm" className="border-[#301B3F] text-gray-300 hover:bg-[#301B3F] hover:text-white">Qualify</Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-[#301B3F] text-gray-300 hover:bg-[#301B3F] hover:text-white"
+                                onClick={() => {
+                                  setSelectedLead(lead);
+                                  setShowViewDialog(true);
+                                }}
+                              >
+                                View
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="border-[#301B3F] text-gray-300 hover:bg-[#301B3F] hover:text-white"
+                                disabled={qualifyingId === lead.id}
+                                onClick={async () => {
+                                  setQualifyingId(lead.id);
+
+                                  // Update UI immediately
+                                  setLeads(prev => prev.map(item =>
+                                    item.id === lead.id ? { ...item, status: 'Qualified' } : item
+                                  ));
+
+                                  try {
+                                    await api.post(`/admin/contact-submissions/${lead.id}/qualify`);
+                                    toast.success('Lead qualified successfully');
+                                    await fetchDashboardData();
+                                  } catch (error) {
+                                    console.error('Failed to qualify lead:', error);
+                                    toast.error('Failed to qualify lead');
+                                  } finally {
+                                    setQualifyingId(null);
+                                  }
+                                }}
+                              >
+                                {qualifyingId === lead.id ? 'Qualifying…' : 'Qualify'}
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Customers Tab */}
+          <TabsContent value="customers" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-white">Customers</h2>
+              <div className="flex gap-2">
+                <Badge variant="secondary" className="bg-[#301B3F] text-white">{customers.filter(c => c.status?.toLowerCase() === 'qualified').length} total</Badge>
+              </div>
+            </div>
+
+            <Card className="bg-[#1a1a1a] border-[#301B3F]">
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-[#151515]">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Company
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Source
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Created
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-[#1a1a1a] divide-y divide-[#301B3F]">
+                      {customers.map((customer) => (
+                        <tr key={customer.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <Avatar className="h-8 w-8 mr-3">
+                                <AvatarFallback className="bg-[#301B3F] text-white">
+                                  {customer.name.split(' ').map(n => n[0]).join('')}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="text-sm font-medium text-white">{customer.name}</div>
+                                <div className="text-sm text-gray-400">{customer.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                            {customer.company}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <Badge variant={getLeadStatusVariant(customer.status)} className="bg-[#301B3F] text-white">
+                              {customer.status}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                            {customer.source || customer.submission_type || '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                            {customer.created_at ? new Date(customer.created_at).toLocaleDateString() : '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-[#301B3F] text-gray-300 hover:bg-[#301B3F] hover:text-white"
+                                onClick={() => openMeetingsDialog(customer)}
+                              >
+                                Meetings
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-[#301B3F] text-gray-300 hover:bg-[#301B3F] hover:text-white"
+                                onClick={() => markAsFollowUp(customer)}
+                              >
+                                Follow Up
+                              </Button>
                             </div>
                           </td>
                         </tr>
@@ -493,6 +788,336 @@ const AdminDashboardContent = () => {
             <BlogModule />
           </TabsContent>
         </Tabs>
+
+        {/* View Lead Dialog */}
+        <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+          <DialogContent className="bg-[#1a1a1a] border-gray-800 text-white max-w-3xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Lead Details</DialogTitle>
+              <DialogDescription>
+                Review contact submission information and status.
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedLead ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-gray-400">Name</label>
+                    <p className="text-white">{selectedLead.name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Email</label>
+                    <p className="text-white">{selectedLead.email}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Phone</label>
+                    <p className="text-white">
+                      {selectedLead.phone || 'N/A'}
+                      {selectedLead.country ? ` (${selectedLead.country}${getCountryNameFromCodeOrDial(selectedLead.country) ? ` — ${getCountryNameFromCodeOrDial(selectedLead.country)}` : ''})` : ''}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Company</label>
+                    <p className="text-white">{selectedLead.company || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Status</label>
+                    <p className="text-white">{selectedLead.status}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Type</label>
+                    <p className="text-white">{selectedLead.submission_type || '-'}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm text-gray-400">Message</label>
+                  <p className="text-white mt-1 p-3 bg-[#252525] rounded border border-gray-800">
+                    {selectedLead.message || 'No message provided.'}
+                  </p>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button variant="secondary" onClick={() => setShowViewDialog(false)}>
+                    Close
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-400">No lead selected.</p>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Add Lead Dialog */}
+        <Dialog open={showAddLeadDialog} onOpenChange={setShowAddLeadDialog}>
+          <DialogContent className="bg-[#1a1a1a] border-gray-800 text-white max-w-3xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Add New Lead</DialogTitle>
+              <DialogDescription>
+                Create a new lead by submitting a contact request.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-gray-400">Name</label>
+                  <input
+                    value={newLead.name}
+                    onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
+                    className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400">Email</label>
+                  <input
+                    value={newLead.email}
+                    onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
+                    className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400">Phone</label>
+                  <input
+                    value={newLead.phone}
+                    onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })}
+                    className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400">Country Code</label>
+                  <input
+                    value={newLead.country}
+                    onChange={(e) => setNewLead({ ...newLead, country: e.target.value })}
+                    placeholder="e.g. IN, US or +91"
+                    className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400">Company</label>
+                  <input
+                    value={newLead.company}
+                    onChange={(e) => setNewLead({ ...newLead, company: e.target.value })}
+                    className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-400">Message</label>
+                <textarea
+                  value={newLead.message}
+                  onChange={(e) => setNewLead({ ...newLead, message: e.target.value })}
+                  className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                  rows={4}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button variant="secondary" onClick={() => setShowAddLeadDialog(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={async () => {
+                    try {
+                      const countryDialCode = getDialCodeFromCountry(newLead.country);
+                      const phoneWithDialCode = getPhoneWithDialCode(newLead.country, newLead.phone);
+
+                      await api.post('/contact', {
+                        submission_type: 'general',
+                        ...newLead,
+                        country: countryDialCode,
+                        phone: phoneWithDialCode,
+                        status: 'new'
+                      });
+                      toast.success('Lead created');
+                      setShowAddLeadDialog(false);
+                      setNewLead({ name: '', email: '', phone: '', company: '', message: '' });
+                      await fetchDashboardData();
+                    } catch (error) {
+                      console.error('Failed to create lead', error);
+                      toast.error('Failed to create lead');
+                    }
+                  }}
+                >
+                  Create
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Meetings Dialog */}
+        <Dialog open={showMeetingsDialog} onOpenChange={setShowMeetingsDialog}>
+          <DialogContent className="bg-[#1a1a1a] border-gray-800 text-white max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Meetings for {selectedCustomerForMeetings?.name}</DialogTitle>
+              <DialogDescription>
+                Create and manage meetings for this customer.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-gray-400">Title</label>
+                  <input
+                    value={meetingForm.title}
+                    onChange={(e) => setMeetingForm({ ...meetingForm, title: e.target.value })}
+                    className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                    placeholder="Meeting title"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400">Date & Time</label>
+                  <input
+                    type="datetime-local"
+                    value={meetingForm.meeting_date}
+                    onChange={(e) => setMeetingForm({ ...meetingForm, meeting_date: e.target.value })}
+                    className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400">Duration (minutes)</label>
+                  <input
+                    type="number"
+                    value={meetingForm.duration_minutes}
+                    onChange={(e) => setMeetingForm({ ...meetingForm, duration_minutes: Number(e.target.value) })}
+                    className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400">Location</label>
+                  <input
+                    value={meetingForm.location}
+                    onChange={(e) => setMeetingForm({ ...meetingForm, location: e.target.value })}
+                    className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                    placeholder="Zoom link / address"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-400">Agenda</label>
+                <textarea
+                  value={meetingForm.agenda}
+                  onChange={(e) => setMeetingForm({ ...meetingForm, agenda: e.target.value })}
+                  className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-400">Notes</label>
+                <textarea
+                  value={meetingForm.notes}
+                  onChange={(e) => setMeetingForm({ ...meetingForm, notes: e.target.value })}
+                  className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex justify-between">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setShowMeetingsDialog(false);
+                    setSelectedCustomerForMeetings(null);
+                    setMeetings([]);
+                  }}
+                >
+                  Close
+                </Button>
+                <Button onClick={createMeeting}>Create Meeting</Button>
+              </div>
+
+              {meetings.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-white">Existing Meetings</h3>
+                  <div className="space-y-2">
+                    {meetings.map((meeting) => (
+                      <div key={meeting.id} className="border border-[#301B3F] rounded p-3">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <div className="text-sm font-semibold text-white">{meeting.title}</div>
+                            <div className="text-xs text-gray-400">
+                              {meeting.meeting_date ? new Date(meeting.meeting_date).toLocaleString() : 'No date'} • {meeting.duration_minutes} min
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-[#301B3F] text-gray-300 hover:bg-[#301B3F] hover:text-white"
+                              onClick={() => {
+                                setSelectedMeetingForOutcome(meeting);
+                                setMeetingOutcome(meeting.outcome || '');
+                                setMeetingStatus(meeting.status || 'scheduled');
+                                setShowMeetingOutcomeDialog(true);
+                              }}
+                            >
+                              Update Outcome
+                            </Button>
+                          </div>
+                        </div>
+                        {meeting.notes && (
+                          <p className="text-sm text-gray-300 mt-2">Notes: {meeting.notes}</p>
+                        )}
+                        {meeting.outcome && (
+                          <p className="text-sm text-gray-300 mt-1">Outcome: {meeting.outcome}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Meeting Outcome Dialog */}
+        <Dialog open={showMeetingOutcomeDialog} onOpenChange={setShowMeetingOutcomeDialog}>
+          <DialogContent className="bg-[#1a1a1a] border-gray-800 text-white max-w-lg max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Update Meeting Outcome</DialogTitle>
+              <DialogDescription>
+                Update the status and outcome for this meeting.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-gray-400">Status</label>
+                <select
+                  value={meetingStatus}
+                  onChange={(e) => setMeetingStatus(e.target.value)}
+                  className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                >
+                  <option value="scheduled">Scheduled</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-sm text-gray-400">Outcome</label>
+                <textarea
+                  value={meetingOutcome}
+                  onChange={(e) => setMeetingOutcome(e.target.value)}
+                  className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
+                  rows={4}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="secondary" onClick={() => setShowMeetingOutcomeDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={updateMeetingOutcome}>Save Outcome</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
@@ -502,13 +1127,23 @@ const AdminDashboardContent = () => {
 const getLeadStatusVariant = (status) => {
   const variants = {
     'new': 'secondary',
+    'New': 'secondary',
     'contacted': 'default',
+    'Contacted': 'default',
     'qualified': 'default',
+    'Qualified': 'default',
     'meeting_scheduled': 'default',
+    'Proposal Sent': 'default',
     'proposal_sent': 'default',
     'negotiation': 'warning',
+    'Negotiation': 'warning',
     'converted': 'default',
-    'lost': 'destructive'
+    'converted to customer': 'default',
+    'Converted to Customer': 'default',
+    'follow up': 'warning',
+    'Follow Up': 'warning',
+    'lost': 'destructive',
+    'Lost': 'destructive'
   };
   return variants[status] || 'secondary';
 };
