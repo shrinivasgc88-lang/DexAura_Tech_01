@@ -43,3 +43,10 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: #910A67;
 }
+
+/* Make <select> dropdown option hover/selection match the app accent color */
+select option:hover,
+select option:checked {
+  background-color: #910A67;
+  color: #fff;
+}

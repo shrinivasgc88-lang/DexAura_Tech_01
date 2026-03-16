@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +30,13 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '@/utils/api';
 import { toast } from 'sonner';
 import { COUNTRIES } from '@/utils/countries';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import BlogModule from '@/components/admin/BlogModule';
 import UsersModule from '@/components/admin/UsersModule';
 
@@ -50,10 +57,30 @@ const AdminDashboardContent = () => {
     name: '',
     email: '',
     phone: '',
-    country: '',
+    country: COUNTRIES[0]?.code || '',
     company: '',
     message: ''
   });
+  const [countrySearch, setCountrySearch] = useState('');
+  const [countryOpen, setCountryOpen] = useState(false);
+  const countrySearchInputRef = useRef(null);
+
+  const filteredCountries = useMemo(() => {
+    const q = countrySearch.trim().toLowerCase();
+    if (!q) return COUNTRIES;
+
+    return COUNTRIES.filter((c) =>
+      c.name.toLowerCase().includes(q) ||
+      c.code.toLowerCase().includes(q) ||
+      c.dialCode.toLowerCase().includes(q)
+    );
+  }, [countrySearch]);
+
+  useEffect(() => {
+    if (countryOpen && countrySearchInputRef.current) {
+      countrySearchInputRef.current.focus();
+    }
+  }, [countryOpen]);
 
   const getDialCodeFromCountry = (countryCode) => {
     const country = COUNTRIES.find((c) => c.code === countryCode);
@@ -888,12 +915,41 @@ const AdminDashboardContent = () => {
                 </div>
                 <div>
                   <label className="text-sm text-gray-400">Country Code</label>
-                  <input
+                  <Select
                     value={newLead.country}
-                    onChange={(e) => setNewLead({ ...newLead, country: e.target.value })}
-                    placeholder="e.g. IN, US or +91"
-                    className="w-full px-3 py-2 mt-1 bg-[#151515] border border-gray-700 rounded text-white"
-                  />
+                    onValueChange={(value) => setNewLead({ ...newLead, country: value })}
+                    onOpenChange={(open) => {
+                      setCountryOpen(open);
+                      if (!open) setCountrySearch('');
+                    }}
+                  >
+                    <SelectTrigger className="w-full mt-1">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1a1a1a] border border-gray-800 text-white max-h-64 overflow-y-auto">
+                      <div className="px-2 pt-2">
+                        <input
+                          ref={countrySearchInputRef}
+                          value={countrySearch}
+                          onChange={(e) => setCountrySearch(e.target.value)}
+                          placeholder="Type to search..."
+                          className="w-full bg-[#1a1a1a] border border-gray-700 rounded px-2 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[#910A67]"
+                        />
+                      </div>
+                      {filteredCountries.map((country) => (
+                        <SelectItem
+                          key={country.code}
+                          value={country.code}
+                          className="bg-[#1a1a1a] text-white focus:bg-[#910A67] focus:text-white data-[state=checked]:bg-[#910A67] data-[state=checked]:text-white"
+                        >
+                          {country.dialCode} {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-400 mt-2">
+                    {getDialCodeFromCountry(newLead.country)}
+                  </p>
                 </div>
                 <div>
                   <label className="text-sm text-gray-400">Company</label>
@@ -934,7 +990,14 @@ const AdminDashboardContent = () => {
                       });
                       toast.success('Lead created');
                       setShowAddLeadDialog(false);
-                      setNewLead({ name: '', email: '', phone: '', company: '', message: '' });
+                      setNewLead({
+                        name: '',
+                        email: '',
+                        phone: '',
+                        country: COUNTRIES[0]?.code || '',
+                        company: '',
+                        message: ''
+                      });
                       await fetchDashboardData();
                     } catch (error) {
                       console.error('Failed to create lead', error);
