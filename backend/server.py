@@ -2,7 +2,7 @@ from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, D
 from fastapi.responses import StreamingResponse
 from fastapi import Request
 from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
+# from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import re
@@ -13,6 +13,8 @@ from typing import List, Optional
 from datetime import datetime, timezone
 import uuid
 import io
+from fastapi.middleware.cors import CORSMiddleware
+
 
 # used directly in this module
 from pydantic import BaseModel, Field
@@ -1764,11 +1766,12 @@ app.include_router(api_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
     allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 # app.add_middleware(
 #     CORSMiddleware,
 #     allow_origins=[
