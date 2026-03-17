@@ -14,11 +14,8 @@ from datetime import datetime, timezone
 import uuid
 import io
 from fastapi.middleware.cors import CORSMiddleware
-
-
 # used directly in this module
 from pydantic import BaseModel, Field
-
 from models import (
     Customer, CustomerCreate, CustomerLogin, Quote, QuoteCreate,
     Order, OrderCreate, OrderItem, Attachment, InspectionRequest,
@@ -33,6 +30,9 @@ from auth_service import get_password_hash, verify_password, create_access_token
 from cad_analyzer import CADAnalyzer
 from email_service import email_service
 from file_service import FileService
+
+# Create the main app with lifespan
+app = FastAPI(lifespan=lifespan)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -1749,8 +1749,7 @@ async def lifespan(app: FastAPI):
     # ---- Shutdown ----
     client.close()
 
-# Create the main app with lifespan
-app = FastAPI(lifespan=lifespan)
+
 
 # Custom exception handler for unhandled exceptions
 from fastapi.responses import JSONResponse
