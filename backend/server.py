@@ -49,6 +49,15 @@ cad_analyzer = CADAnalyzer()
 # Create API router
 api_router = APIRouter(prefix="/api")
 
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @api_router.get("/test-route")
 async def test_route():
     return {"message": "Route works"}
@@ -59,7 +68,20 @@ async def db_info():
         "mongo_url": os.environ.get("MONGO_URL"),
         "database_name": os.environ.get("DB_NAME")
     }
+@api_router.post("/contact")
+async def contact(request: Request):
+    try:
+        data = await request.json()
+        print("DATA:", data)
 
+        # Mongo insert
+        collection.insert_one(data)
+
+        return {"message": "Lead saved"}
+
+    except Exception as e:
+        print("ERROR:", str(e))
+        return {"error": str(e)}
 
 # Configure logging
 logging.basicConfig(
@@ -612,7 +634,7 @@ class ChatMessage(BaseModel):
     text: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-@api_router.post("/contact")
+# @api_router.post("/contact")
 async def submit_contact(submission: Request):
     # Create a lead from the contact submission
     from admin_models import Lead, LeadStatus
@@ -1764,13 +1786,6 @@ async def validation_exception_handler(request, exc):
 # Include the router in the main app
 app.include_router(api_router)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # app.add_middleware(
 #     CORSMiddleware,
