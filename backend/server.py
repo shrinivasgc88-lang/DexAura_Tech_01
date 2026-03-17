@@ -68,20 +68,20 @@ async def db_info():
         "mongo_url": os.environ.get("MONGO_URL"),
         "database_name": os.environ.get("DB_NAME")
     }
-@api_router.post("/contact")
-async def contact(request: Request):
-    try:
-        data = await request.json()
-        print("DATA:", data)
+# @api_router.post("/contact")
+# async def contact(request: Request):
+#     try:
+#         data = await request.json()
+#         print("DATA:", data)
 
-        # Mongo insert
-        collection.insert_one(data)
+#         # Mongo insert
+#         collection.insert_one(data)
 
-        return {"message": "Lead saved"}
+#         return {"message": "Lead saved"}
 
-    except Exception as e:
-        print("ERROR:", str(e))
-        return {"error": str(e)}
+#     except Exception as e:
+#         print("ERROR:", str(e))
+#         return {"error": str(e)}
 
 # Configure logging
 logging.basicConfig(
@@ -634,7 +634,7 @@ class ChatMessage(BaseModel):
     text: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-# @api_router.post("/contact")
+@api_router.post("/contact")
 async def submit_contact(submission: Request):
     # Create a lead from the contact submission
     from admin_models import Lead, LeadStatus
