@@ -31,6 +31,17 @@ from cad_analyzer import CADAnalyzer
 from email_service import email_service
 from file_service import FileService
 
+# Lifespan event handler
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    # ---- Startup (optional) ----
+    # client is already lazy-connected, so no need to do anything
+    
+    yield  # App is running
+    
+    # ---- Shutdown ----
+    client.close()
+
 # Create the main app with lifespan
 app = FastAPI(lifespan=_lifespan)
 
@@ -1737,19 +1748,6 @@ async def get_suppliers(current_user: Customer = Depends(get_current_user)):
     
     suppliers = await db.customers.find({"role": UserRole.SUPPLIER}, {"_id": 0, "password_hash": 0}).to_list(100)
     return suppliers
-
-# Lifespan event handler
-@asynccontextmanager
-async def _lifespan(app: FastAPI):
-    # ---- Startup (optional) ----
-    # client is already lazy-connected, so no need to do anything
-    
-    yield  # App is running
-    
-    # ---- Shutdown ----
-    client.close()
-
-
 
 # Custom exception handler for unhandled exceptions
 from fastapi.responses import JSONResponse
