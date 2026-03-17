@@ -683,14 +683,14 @@ async def submit_contact(submission: dict):
 
     # Create Lead object and link to contact submission id
     lead = Lead(
-        name=submission.name,
-        email=submission.email,
-        phone=submission.phone,
-        company=submission.company,
+        name=contact_submission.name,
+        email=contact_submission.email,
+        phone=contact_submission.phone,
+        company=contact_submission.company,
         source="contact_form",
         status=LeadStatus.NEW,
-        contact_submission_id=submission.id,
-        notes=f"Subject: {getattr(submission, 'subject', 'general')}\nMessage: {submission.message}\nCountry: {getattr(submission, 'country', '')}\nMonthly Volume: {getattr(submission, 'monthly_volume', '')}"
+        contact_submission_id=contact_submission.id,
+        notes=f"Subject: {getattr(contact_submission, 'submission_type', 'general')}\nMessage: {contact_submission.message}\nCountry: {getattr(contact_submission, 'country', '')}\nMonthly Volume: {getattr(contact_submission, 'monthly_volume', '')}"
     )
 
     lead_doc = lead.model_dump()
@@ -721,7 +721,7 @@ async def submit_contact(submission: dict):
     notification = Notification(
         recipient_id="admin",
         title="New Lead Generated",
-        message=f"New lead from {submission.name} ({submission.email})",
+        message=f"New lead from {contact_submission.name} ({contact_submission.email})",
         type="lead",
         related_entity_id=lead.id
     )
