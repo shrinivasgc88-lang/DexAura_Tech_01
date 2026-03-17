@@ -68,10 +68,14 @@ if _cors_origins_env:
 else:
     _cors_origins = ["*"]
 
+# When allow_origins is '*' we cannot set allow_credentials=True (browsers reject this).
+# Use credentials only when specific origins are listed.
+_allow_credentials = False if _cors_origins == ["*"] else True
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
-    allow_credentials=True,
+    allow_credentials=_allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
