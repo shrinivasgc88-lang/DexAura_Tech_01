@@ -61,9 +61,16 @@ cad_analyzer = CADAnalyzer()
 api_router = APIRouter(prefix="/api")
 
 
+# Configure CORS origins safely (avoid empty origin list)
+_cors_origins_env = os.environ.get('CORS_ORIGINS', '').strip()
+if _cors_origins_env:
+    _cors_origins = [o.strip() for o in _cors_origins_env.split(',') if o.strip()]
+else:
+    _cors_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -646,12 +653,23 @@ class ChatMessage(BaseModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 @api_router.post("/contact")
-async def submit_contact(submission: Request):
+async def submit_contact(submission: dict):
+    # Support the front-end sending `subject` and other fields,
+    # while still validating against the ContactSubmission schema.
+    submission_type = submission.get("submission_type") or submission.get("subject") or "general"
+    submission_payload = {**submission, "submission_type": submission_type}
+
+    try:
+        contact_submission = ContactSubmission(**submission_payload)
+    except Exception as e:
+        # Improve error visibility for missing/invalid fields
+        raise HTTPException(status_code=400, detail=f"Invalid contact submission: {e}")
+
     # Create a lead from the contact submission
     from admin_models import Lead, LeadStatus
 
     # Build contact submission first so we can link it on the lead
-    submission_doc = submission.model_dump()
+    submission_doc = contact_submission.model_dump()
 
     # If country isn't explicitly provided, derive it from international phone code (e.g., +91)
     if not submission_doc.get("country") and submission_doc.get("phone"):
@@ -659,7 +677,9 @@ async def submit_contact(submission: Request):
         if match:
             submission_doc["country"] = match.group(1)
 
-    submission_doc['created_at'] = submission_doc['created_at'].isoformat()
+    # Ensure created_at is JSON serializable
+    if isinstance(submission_doc.get('created_at'), datetime):
+        submission_doc['created_at'] = submission_doc['created_at'].isoformat()
 
     # Create Lead object and link to contact submission id
     lead = Lead(
