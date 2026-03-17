@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Depends, Header, Body
 from fastapi.responses import StreamingResponse
+from fastapi import Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -610,7 +611,7 @@ class ChatMessage(BaseModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 @api_router.post("/contact")
-async def submit_contact(submission: ContactSubmission):
+async def submit_contact(submission: Request):
     # Create a lead from the contact submission
     from admin_models import Lead, LeadStatus
 
