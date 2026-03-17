@@ -32,7 +32,7 @@ from email_service import email_service
 from file_service import FileService
 
 # Create the main app with lifespan
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=_lifespan)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -1740,7 +1740,7 @@ async def get_suppliers(current_user: Customer = Depends(get_current_user)):
 
 # Lifespan event handler
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def _lifespan(app: FastAPI):
     # ---- Startup (optional) ----
     # client is already lazy-connected, so no need to do anything
     

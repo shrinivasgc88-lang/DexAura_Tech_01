@@ -11,11 +11,11 @@ const Footer = () => {
           {/* Company Info */}
           <div>
             <div className="flex items-center space-x-3 mb-4">
-              <img src={whiteLogo} alt="DexAura" className="w-20 h-11" />
-              <span className="text-2xl font-semibold" >
-              <span className="text-white">Dex</span>
-              <span className="text-[#910A67]">Aura</span>
-            </span>
+              <img src={whiteLogo} alt="DexAura" className="w-18 h-11" />
+                          <span className="text-2xl font-semibold">
+                            <span className="text-white">Dex</span>
+                            <span className="text-[#910A67]">Aura</span>
+                          </span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
               On-demand manufacturing excellence in Bengaluru. Precision, quality, and speed for your production needs.
