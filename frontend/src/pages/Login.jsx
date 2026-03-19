@@ -159,7 +159,7 @@ const Login = () => {
 
         <div className="bg-[#1a1a1a] border border-[#301B3F]/30 rounded-2xl p-8">
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8 bg-[#151515]">
+            <TabsList className="grid w-full grid-cols-1 mb-8 bg-[#151515]">
               <TabsTrigger value="login" data-testid="login-tab">Login</TabsTrigger>
               {/* <TabsTrigger value="register" data-testid="register-tab">Register</TabsTrigger> */}
             </TabsList>
