@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin } from 'lucide-react';
+import whiteLogo from '@/assects/Images/white_logo.png';
 
 const Footer = () => {
   return (
@@ -10,10 +11,11 @@ const Footer = () => {
           {/* Company Info */}
           <div>
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#720455] to-[#910A67] rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">D</span>
-              </div>
-              <span className="text-xl font-semibold text-white">DexAura</span>
+              <img src={whiteLogo} alt="DexAura" className="w-18 h-11" />
+                          <span className="text-2xl font-semibold">
+                            <span className="text-white">Dex</span>
+                            <span className="text-[#910A67]">Aura</span>
+                          </span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
               On-demand manufacturing excellence in Bengaluru. Precision, quality, and speed for your production needs.

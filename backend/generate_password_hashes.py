@@ -5,8 +5,10 @@ import bcrypt
 
 passwords = {
     "admin123": None,
-    "test123": None,
-    "password123": None
+    "owner123": None,
+    "buyer123": None,
+    "supplier123": None,
+    "viewer123": None
 }
 
 print("=" * 60)

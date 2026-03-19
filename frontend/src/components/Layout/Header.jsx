@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Bell, User, LogOut, Menu, X } from 'lucide-react';
+import whiteLogo from '@/assects/Images/white_logo.png';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -86,10 +87,11 @@ const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3" data-testid="header-logo">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#720455] to-[#910A67] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">D</span>
-            </div>
-            <span className="text-xl font-semibold text-white">DexAura</span>
+            <img src={whiteLogo} alt="DexAura" className="w-18 h-11" />
+            <span className="text-2xl font-semibold">
+              <span className="text-white">Dex</span>
+              <span className="text-[#910A67]">Aura</span>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}

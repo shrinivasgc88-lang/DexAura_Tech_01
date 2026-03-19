@@ -57,9 +57,7 @@ const Login = () => {
       toast.success('Login successful!');
       
       // Redirect based on user role
-      const redirectUrl = result?.role === 'ADMIN' ? '/admin' : '/teamspace';
-      console.log(`[LOGIN] Navigating to ${redirectUrl} (role: ${result?.role})`);
-      navigate(redirectUrl);
+      navigate('/dashboard');
     } catch (error) {
       console.error('[LOGIN] ✗ Login failed');
       console.error('[LOGIN] Error:', error.message);

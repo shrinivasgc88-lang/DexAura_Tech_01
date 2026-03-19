@@ -31,6 +31,7 @@ import { Search, Plus, TrendingUp, Calendar, Phone, Mail } from 'lucide-react';
 
 const LeadsModule = () => {
   const [leads, setLeads] = useState([]);
+  const [contactSubmissions, setContactSubmissions] = useState({});
   const [followups, setFollowups] = useState({});
   const [meetings, setMeetings] = useState({});
   const [loading, setLoading] = useState(true);
@@ -48,8 +49,20 @@ const LeadsModule = () => {
 
   const fetchLeads = async () => {
     try {
-      const response = await api.get('/admin/leads');
-      setLeads(response.data.leads || []);
+      const [leadsRes, submissionsRes] = await Promise.all([
+        api.get('/admin/leads'),
+        api.get('/admin/contact-submissions')
+      ]);
+
+      setLeads(leadsRes.data.leads || []);
+
+      const submissions = submissionsRes.data.submissions || [];
+      setContactSubmissions(
+        submissions.reduce((map, submission) => {
+          map[submission.id] = submission;
+          return map;
+        }, {})
+      );
     } catch (error) {
       toast.error('Failed to load leads');
     } finally {
@@ -112,6 +125,8 @@ const LeadsModule = () => {
     const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const selectedSubmission = selectedLead ? contactSubmissions[selectedLead.contact_submission_id] : null;
 
   const getStatusColor = (status) => {
     const colors = {
@@ -230,7 +245,7 @@ const LeadsModule = () => {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="border-gray-600 text-gray-300">
-                          {lead.source}
+                          {lead.source || contactSubmissions[lead.contact_submission_id]?.submission_type || '-'}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -301,6 +316,36 @@ const LeadsModule = () => {
                   <p className="text-white mt-1 p-3 bg-[#252525] rounded border border-gray-800">
                     {selectedLead.notes}
                   </p>
+                </div>
+              )}
+
+              {selectedSubmission && (
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3">Contact Submission</h3>
+                  <div className="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                      <label className="text-sm text-gray-400">Type</label>
+                      <p className="text-white">{selectedSubmission.submission_type || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-400">Status</label>
+                      <p className="text-white">{selectedSubmission.status || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-400">Country</label>
+                      <p className="text-white">{selectedSubmission.country || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-400">Monthly Volume</label>
+                      <p className="text-white">{selectedSubmission.monthly_volume || 'N/A'}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Message</label>
+                    <p className="text-white mt-1 p-3 bg-[#252525] rounded border border-gray-800">
+                      {selectedSubmission.message}
+                    </p>
+                  </div>
                 </div>
               )}
 

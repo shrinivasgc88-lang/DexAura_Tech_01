@@ -529,3 +529,55 @@ def get_demo_contact_submissions():
             "created_at": (datetime.now(timezone.utc) - timedelta(hours=12)).isoformat()
         }
     ]
+
+def get_demo_quality_reports():
+    return [
+        {
+            "id": str(uuid.uuid4()),
+            "order_id": "order_001",  # This would need to match actual order IDs
+            "supplier_id": "supplier_cnc_1",
+            "report_data": {
+                "part_number": "BRK-001",
+                "part_name": "Brake Caliper Bracket",
+                "inspection_date": (datetime.now(timezone.utc) - timedelta(days=2)).isoformat(),
+                "inspector": "Quality Control Team",
+                "measurements": {
+                    "dimension_a": {"measured": 25.02, "nominal": 25.00, "tolerance": "±0.05", "status": "pass"},
+                    "dimension_b": {"measured": 15.01, "nominal": 15.00, "tolerance": "±0.03", "status": "pass"},
+                    "dimension_c": {"measured": 8.00, "nominal": 8.00, "tolerance": "±0.02", "status": "pass"}
+                },
+                "visual_inspection": "No defects observed. Surface finish meets requirements.",
+                "material_certification": "Material composition verified - Steel 1018",
+                "overall_status": "approved"
+            },
+            "status": "approved",
+            "admin_notes": "Excellent quality. All measurements within tolerance.",
+            "created_at": (datetime.now(timezone.utc) - timedelta(days=2)).isoformat(),
+            "reviewed_at": (datetime.now(timezone.utc) - timedelta(days=1)).isoformat(),
+            "reviewed_by": "admin"
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "order_id": "order_002",
+            "supplier_id": "supplier_cnc_2",
+            "report_data": {
+                "part_number": "BRK-002",
+                "part_name": "Mounting Plate",
+                "inspection_date": (datetime.now(timezone.utc) - timedelta(days=1)).isoformat(),
+                "inspector": "Quality Control Team",
+                "measurements": {
+                    "thickness": {"measured": 4.98, "nominal": 5.00, "tolerance": "±0.10", "status": "pass"},
+                    "hole_diameter": {"measured": 8.02, "nominal": 8.00, "tolerance": "±0.05", "status": "pass"},
+                    "hole_spacing": {"measured": 50.01, "nominal": 50.00, "tolerance": "±0.05", "status": "pass"}
+                },
+                "visual_inspection": "Minor surface scratches observed but within acceptable limits.",
+                "material_certification": "Material composition verified - Steel 1018",
+                "overall_status": "approved"
+            },
+            "status": "approved",
+            "admin_notes": "Good quality. Minor cosmetic issues but functional requirements met.",
+            "created_at": (datetime.now(timezone.utc) - timedelta(days=1)).isoformat(),
+            "reviewed_at": datetime.now(timezone.utc).isoformat(),
+            "reviewed_by": "admin"
+        }
+    ]
