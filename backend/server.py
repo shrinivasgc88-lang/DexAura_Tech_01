@@ -87,6 +87,10 @@ async def _log_response_headers(request, call_next):
         print(f"[CORS DEBUG] {request.method} {request.url.path} -> status={response.status_code} headers={dict(response.headers)}")
     return response
 
+@app.get("/")
+async def root():
+    return {"status": "ok", "message": "DexAura API running"}
+
 @api_router.get("/test-route")
 async def test_route():
     return {"message": "Route works"}
