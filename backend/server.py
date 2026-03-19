@@ -60,7 +60,6 @@ cad_analyzer = CADAnalyzer()
 # Create API router
 api_router = APIRouter(prefix="/api")
 
-
 # Configure CORS origins safely (avoid empty origin list)
 _cors_origins_env = os.environ.get('CORS_ORIGINS', '').strip()
 if _cors_origins_env:
@@ -79,6 +78,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Debug middleware: log response headers for /api/contact and /api/test-route
+@app.middleware("http")
+async def _log_response_headers(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/contact") or request.url.path.startswith("/api/test-route"):
+        print(f"[CORS DEBUG] {request.method} {request.url.path} -> status={response.status_code} headers={dict(response.headers)}")
+    return response
 
 @api_router.get("/test-route")
 async def test_route():
