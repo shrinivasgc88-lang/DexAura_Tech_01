@@ -1,0 +1,113 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Mail, Phone, MapPin } from 'lucide-react';
+import whiteLogo from '@/assects/Images/white_logo.png';
+
+const Footer = () => {
+  return (
+    <footer className="relative z-20 border-t border-[#301B3F]/30 bg-[#0d0d0d]">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Company Info */}
+          <div>
+            <div className="flex items-center space-x-3 mb-4">
+              <img src={whiteLogo} alt="DexAura" className="w-18 h-11" />
+                          <span className="text-2xl font-semibold">
+                            <span className="text-white">Dex</span>
+                            <span className="text-[#910A67]">Aura</span>
+                          </span>
+            </div>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              On-demand manufacturing excellence in Bengaluru. Precision, quality, and speed for your production needs.
+            </p>
+          </div>
+
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">Quick Links</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/capabilities" className="text-gray-400 hover:text-[#910A67] transition-colors text-sm">
+                  Capabilities
+                </Link>
+              </li>
+              <li>
+                <Link to="/quality" className="text-gray-400 hover:text-[#910A67] transition-colors text-sm">
+                  Quality & Compliance
+                </Link>
+              </li>
+              {/* <li>
+                <Link to="/blog" className="text-gray-400 hover:text-[#910A67] transition-colors text-sm">
+                  Resources & Blog
+                </Link>
+              </li> */}
+              <li>
+                <Link to="/instant-quote" className="text-gray-400 hover:text-[#910A67] transition-colors text-sm">
+                  Instant Quote
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Services */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">Services</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/capabilities/cnc-machining" className="text-gray-400 hover:text-[#910A67] transition-colors text-sm">
+                  CNC Machining
+                </Link>
+              </li>
+              <li>
+                <Link to="/capabilities/sheet-metals" className="text-gray-400 hover:text-[#910A67] transition-colors text-sm">
+                  Sheet Metals
+                </Link>
+              </li>
+              <li>
+                <Link to="/capabilities/3d-printing" className="text-gray-400 hover:text-[#910A67] transition-colors text-sm">
+                  3D Printing
+                </Link>
+              </li>
+              <li>
+                <Link to="/capabilities/special-process" className="text-gray-400 hover:text-[#910A67] transition-colors text-sm">
+                  Special Process
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h3 className="text-white font-semibold mb-4">Contact</h3>
+            <ul className="space-y-3">
+              <li className="flex items-start space-x-2 text-sm text-gray-400">
+                <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span>Bengaluru, Karnataka, India</span>
+              </li>
+              <li className="flex items-center space-x-2 text-sm text-gray-400">
+                <Mail className="w-4 h-4 flex-shrink-0" />
+                <a href="mailto:contact@dexaura.com" className="hover:text-[#910A67] transition-colors">
+                  contact@dexaura.com
+                </a>
+              </li>
+              <li className="flex items-center space-x-2 text-sm text-gray-400">
+                <Phone className="w-4 h-4 flex-shrink-0" />
+                <a href="tel:+919449121791" className="hover:text-[#910A67] transition-colors">
+                  +91 944 912 1791
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="border-t border-[#301B3F]/30 mt-8 pt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            &copy; {new Date().getFullYear()} DexAura Manufacturing. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;
