@@ -89,9 +89,6 @@ const webpackConfig = {
 // Only add babel plugin if visual editing is enabled
 webpackConfig.babel = {
   plugins: [
-    ...(process.env.NODE_ENV === "development"
-      ? [require.resolve("react-refresh/babel")]
-      : []),
     ...(babelMetadataPlugin ? [babelMetadataPlugin] : []),
   ],
 };
