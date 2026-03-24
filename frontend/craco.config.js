@@ -1,4 +1,5 @@
 // craco.config.js
+
 const path = require("path");
 require("dotenv").config();
 const fs = require("fs");
@@ -86,11 +87,14 @@ const webpackConfig = {
 };
 
 // Only add babel plugin if visual editing is enabled
-if (config.enableVisualEdits) {
-  webpackConfig.babel = {
-    plugins: [babelMetadataPlugin],
-  };
-}
+webpackConfig.babel = {
+  plugins: [
+    ...(process.env.NODE_ENV === "development"
+      ? [require.resolve("react-refresh/babel")]
+      : []),
+    ...(babelMetadataPlugin ? [babelMetadataPlugin] : []),
+  ],
+};
 
 // Setup dev server with visual edits and/or health check
 if (config.enableVisualEdits || config.enableHealthCheck) {
