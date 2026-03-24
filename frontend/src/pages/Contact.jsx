@@ -57,7 +57,7 @@ const Contact = () => {
     {
       icon: <Mail className="w-6 h-6" />,
       title: 'Email',
-      primary: 'contact@dexaura.com',
+      primary: 'contact@dexaura.org',
       secondary: 'Response within 24 hours',
       description: 'Send us your requirements',
       action: () => window.open('mailto:contact@dexaura.com')
@@ -93,25 +93,25 @@ const Contact = () => {
     {
       icon: <Headphones className="w-8 h-8" />,
       name: 'Sales & Quotes',
-      email: 'sales@dexaura.com',
+      email: 'sales@dexaura.org',
       description: 'Get pricing, lead times, and manufacturing feasibility'
     },
     {
       icon: <FileText className="w-8 h-8" />,
       name: 'Engineering Support',
-      email: 'engineering@dexaura.com',
+      email: 'engineering@dexaura.org',
       description: 'DFM feedback, material selection, and process recommendations'
     },
     {
       icon: <CheckCircle className="w-8 h-8" />,
       name: 'Quality & Compliance',
-      email: 'quality@dexaura.com',
+      email: 'quality@dexaura.org',
       description: 'Inspection services, certifications, and documentation'
     },
     {
       icon: <Clock className="w-8 h-8" />,
       name: 'Order Management',
-      email: 'orders@dexaura.com',
+      email: 'orders@dexaura.org',
       description: 'Order status, shipping updates, and delivery tracking'
     }
   ];
