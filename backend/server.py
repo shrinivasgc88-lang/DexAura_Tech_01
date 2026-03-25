@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Depends, Header, Body
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form, Depends, Header, Body, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from fastapi import Request
 from dotenv import load_dotenv
@@ -667,8 +667,29 @@ class ChatMessage(BaseModel):
     text: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+async def send_contact_notifications(submission_doc: dict, contact_submission: ContactSubmission, lead: Lead):
+    """Background task to send email and create notification"""
+    try:
+        await email_service.notify_admin_contact_submission(submission_doc)
+    except Exception as e:
+        print(f"[CONTACT] Email notification failed: {e}")
+
+    try:
+        notification = Notification(
+            recipient_id="admin",
+            title="New Lead Generated",
+            message=f"New lead from {contact_submission.name} ({contact_submission.email})",
+            type="lead",
+            related_entity_id=lead.id
+        )
+        notif_doc = notification.model_dump()
+        notif_doc['created_at'] = notif_doc['created_at'].isoformat()
+        await db.notifications.insert_one(notif_doc)
+    except Exception as e:
+        print(f"[CONTACT] Notification creation failed: {e}")
+
 @api_router.post("/contact")
-async def submit_contact(submission: dict):
+async def submit_contact(background_tasks: BackgroundTasks, submission: dict):
     print(f"[CONTACT] Received submission: {submission}")
 
     # Support the front-end sending `subject` and other fields,
@@ -735,18 +756,8 @@ async def submit_contact(submission: dict):
         if stored_submission and "_id" in stored_submission:
             stored_submission["_id"] = str(stored_submission["_id"])
 
-        await email_service.notify_admin_contact_submission(submission_doc)
-
-        notification = Notification(
-            recipient_id="admin",
-            title="New Lead Generated",
-            message=f"New lead from {contact_submission.name} ({contact_submission.email})",
-            type="lead",
-            related_entity_id=lead.id
-        )
-        notif_doc = notification.model_dump()
-        notif_doc['created_at'] = notif_doc['created_at'].isoformat()
-        await db.notifications.insert_one(notif_doc)
+        # Send notifications in background
+        background_tasks.add_task(send_contact_notifications, submission_doc, contact_submission, lead)
 
         # Return the stored documents (with MongoDB ObjectId in `_id`)
         return {"lead": stored_lead, "contact_submission": stored_submission}
@@ -756,73 +767,6 @@ async def submit_contact(submission: dict):
         import traceback
         traceback.print_exc()
         raise
-
-    # Create a lead from the contact submission
-    from admin_models import Lead, LeadStatus
-
-    # Build contact submission first so we can link it on the lead
-    submission_doc = contact_submission.model_dump()
-
-    # If country isn't explicitly provided, derive it from international phone code (e.g., +91)
-    if not submission_doc.get("country") and submission_doc.get("phone"):
-        match = re.match(r"^(\+\d+)", submission_doc["phone"])
-        if match:
-            submission_doc["country"] = match.group(1)
-
-    # Ensure created_at is JSON serializable
-    if isinstance(submission_doc.get('created_at'), datetime):
-        submission_doc['created_at'] = submission_doc['created_at'].isoformat()
-
-    # Create Lead object and link to contact submission id
-    lead = Lead(
-        name=contact_submission.name,
-        email=contact_submission.email,
-        phone=contact_submission.phone,
-        company=contact_submission.company,
-        source="contact_form",
-        status=LeadStatus.NEW,
-        contact_submission_id=contact_submission.id,
-        notes=f"Subject: {getattr(contact_submission, 'submission_type', 'general')}\nMessage: {contact_submission.message}\nCountry: {getattr(contact_submission, 'country', '')}\nMonthly Volume: {getattr(contact_submission, 'monthly_volume', '')}"
-    )
-
-    lead_doc = lead.model_dump()
-    lead_doc['created_at'] = lead_doc['created_at'].isoformat()
-    lead_doc['updated_at'] = lead_doc['updated_at'].isoformat()
-
-    # Insert lead using MongoDB's default ObjectId for `_id`
-    insert_result = await db.leads.insert_one(lead_doc)
-    inserted_lead_id = insert_result.inserted_id
-
-    # Persist contact submission (for chat history / tracking)
-    submission_doc['lead_id'] = lead.id
-    sub_insert_result = await db.contact_submissions.insert_one(submission_doc)
-    inserted_submission_id = sub_insert_result.inserted_id
-
-    # Load the inserted documents so we can return their full stored form
-    stored_lead = await db.leads.find_one({"_id": inserted_lead_id}, {"_id": 1, "id": 1, "name": 1, "email": 1, "phone": 1, "company": 1, "source": 1, "status": 1, "contact_submission_id": 1, "assigned_to": 1, "notes": 1, "estimated_value": 1, "converted_to_customer_id": 1, "created_at": 1, "updated_at": 1})
-    stored_submission = await db.contact_submissions.find_one({"_id": inserted_submission_id}, {"_id": 1, "id": 1, "submission_type": 1, "name": 1, "email": 1, "phone": 1, "country": 1, "company": 1, "monthly_volume": 1, "message": 1, "status": 1, "chat_history": 1, "created_at": 1, "lead_id": 1})
-
-    # Convert ObjectId to string for JSON serializable output
-    if stored_lead and "_id" in stored_lead:
-        stored_lead["_id"] = str(stored_lead["_id"])
-    if stored_submission and "_id" in stored_submission:
-        stored_submission["_id"] = str(stored_submission["_id"])
-
-    await email_service.notify_admin_contact_submission(submission_doc)
-
-    notification = Notification(
-        recipient_id="admin",
-        title="New Lead Generated",
-        message=f"New lead from {contact_submission.name} ({contact_submission.email})",
-        type="lead",
-        related_entity_id=lead.id
-    )
-    notif_doc = notification.model_dump()
-    notif_doc['created_at'] = notif_doc['created_at'].isoformat()
-    await db.notifications.insert_one(notif_doc)
-
-    # Return the stored documents (with MongoDB ObjectId in `_id`)
-    return {"lead": stored_lead, "contact_submission": stored_submission}
 
 @api_router.patch("/contact/{submission_id}/chat")
 async def append_chat_message(submission_id: str, message: ChatMessage):
