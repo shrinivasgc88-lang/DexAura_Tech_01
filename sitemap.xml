@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url>
+    <loc>https://dexaura.in/</loc>
+    <priority>1.0</priority>
+  </url>
+
+    <url>
+        <loc>https://dexaura.in/capabilities</loc>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://dexaura.in/capabilities/cnc-machining</loc>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://dexaura.in/capabilities/cnc-milling</loc>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://dexaura.in/capabilities/cnc-turning</loc>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://dexaura.in/capabilities/sheet-metals</loc>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://dexaura.in/capabilities/sheet-metals/laser-cutting</loc>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://dexaura.in/capabilities/sheet-metals/forming-bending</loc>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://dexaura.in/capabilities/sheet-metals/punching</loc>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://dexaura.in/capabilities/sheet-metals/fabricated-assemblies</loc>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://dexaura.in/capabilities/3d-printing</loc>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://dexaura.in/capabilities/special-process</loc>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://dexaura.in/quality</loc>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://dexaura.in/industries</loc>
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://dexaura.in/contact</loc>
+        <priority>0.8</priority>
+    </url>
+
+  <url>
+    <loc>https://dexaura.in/contact</loc>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>
