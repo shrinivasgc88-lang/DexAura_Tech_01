@@ -884,3 +884,972 @@ async def get_audit_logs(
     current_user: Customer = Depends(get_current_user)
 ):
     if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    logs = await db.audit_logs.find({}, {"_id": 0}).sort("timestamp", -1).skip(skip).limit(limit).to_list(limit)
+    
+    for log in logs:
+        if isinstance(log['timestamp'], str):
+            log['timestamp'] = datetime.fromisoformat(log['timestamp'])
+    
+    return logs
+
+@api_router.get("/admin/contact-submissions")
+async def get_contact_submissions(
+    status: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+    current_user: Customer = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    query = {}
+    if status:
+        # Case-insensitive match (e.g., "Qualified" or "qualified")
+        query["status"] = {"$regex": f"^{re.escape(status)}$", "$options": "i"}
+    
+    total = await db.contact_submissions.count_documents(query)
+    submissions = await db.contact_submissions.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return {"total": total, "submissions": submissions}
+
+@api_router.patch("/admin/contact-submissions/{submission_id}")
+async def update_contact_submission(
+    submission_id: str,
+    status: Optional[str] = None,
+    current_user: Customer = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    update_data = {}
+    if status:
+        update_data["status"] = status
+    
+    result = await db.contact_submissions.update_one(
+        {"id": submission_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Contact submission not found")
+    
+    return {"message": "Contact submission updated successfully"}
+
+@api_router.post("/admin/contact-submissions/{submission_id}/qualify")
+async def qualify_contact_submission(
+    submission_id: str,
+    current_user: Customer = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    submission = await db.contact_submissions.find_one({"id": submission_id})
+    if not submission:
+        raise HTTPException(status_code=404, detail="Contact submission not found")
+
+    # Create the new lead record
+    lead = Lead(
+        name=submission.get("name"),
+        email=submission.get("email"),
+        phone=submission.get("phone"),
+        company=submission.get("company"),
+        source=submission.get("submission_type") or "contact_form",
+        status=LeadStatus.QUALIFIED,
+        contact_submission_id=submission_id,
+    )
+
+    lead_doc = lead.model_dump()
+    lead_doc["created_at"] = lead_doc["created_at"].isoformat()
+    lead_doc["updated_at"] = lead_doc["updated_at"].isoformat()
+    await db.leads.insert_one(lead_doc)
+
+    # Update the contact submission status so the database reflects qualification
+    await db.contact_submissions.update_one(
+        {"id": submission_id},
+        {"$set": {"status": "Qualified", "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+
+    return {"message": "Contact submission qualified", "lead": lead_doc}
+
+# ===== LEAD MANAGEMENT =====
+@api_router.get("/admin/leads")
+async def get_leads(
+    status: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+    current_user: Customer = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    query = {}
+    if status:
+        query["status"] = status
+    
+    total = await db.leads.count_documents(query)
+    leads = await db.leads.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return {"total": total, "leads": leads}
+
+@api_router.post("/admin/leads")
+async def create_lead(lead_data: Lead, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    lead_doc = lead_data.model_dump()
+    lead_doc['created_at'] = lead_doc['created_at'].isoformat()
+    lead_doc['updated_at'] = lead_doc['updated_at'].isoformat()
+    await db.leads.insert_one(lead_doc)
+    return lead_data
+
+@api_router.post("/admin/leads/{lead_id}/convert-to-customer")
+async def convert_lead_to_customer(
+    lead_id: str,
+    customer_data: dict = None,
+    current_user: Customer = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    # Get the lead
+    lead = await db.leads.find_one({"id": lead_id}, {"_id": 0})
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    
+    # Check if lead is already converted
+    if lead.get("converted_to_customer_id"):
+        raise HTTPException(status_code=400, detail="Lead already converted to customer")
+    
+    # Check if email already exists as a customer
+    existing_customer = await db.customers.find_one({"email": lead["email"]}, {"_id": 0})
+    if existing_customer:
+        raise HTTPException(status_code=400, detail="Customer with this email already exists")
+    
+    # Create customer from lead data
+    customer_id = str(uuid.uuid4())
+    customer = {
+        "id": customer_id,
+        "email": lead["email"],
+        "name": lead["name"],
+        "company": lead.get("company"),
+        "phone": lead.get("phone"),
+        "role": UserRole.BUYER,  # Default role for converted leads
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Add any additional customer data if provided
+    if customer_data:
+        customer.update(customer_data)
+    
+    # Insert the customer
+    await db.customers.insert_one(customer)
+    
+    # Update the lead to mark it as converted
+    await db.leads.update_one(
+        {"id": lead_id},
+        {
+            "$set": {
+                "status": "Converted to Customer",
+                "converted_to_customer_id": customer_id,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+    )
+    
+    # Create audit log
+    audit = AuditLog(
+        user_id=current_user.id,
+        action="convert_lead_to_customer",
+        entity_type="lead",
+        entity_id=lead_id,
+        changes={"converted_to_customer_id": customer_id}
+    )
+    audit_doc = audit.model_dump()
+    audit_doc['timestamp'] = audit_doc['timestamp'].isoformat()
+    await db.audit_logs.insert_one(audit_doc)
+    
+    return {
+        "message": "Lead successfully converted to customer",
+        "customer_id": customer_id,
+        "lead_id": lead_id
+    }
+
+@api_router.get("/admin/leads/{lead_id}/followups")
+async def get_followups(lead_id: str, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    followups = await db.followups.find({"lead_id": lead_id}, {"_id": 0}).sort("follow_up_date", -1).to_list(100)
+    return followups
+
+@api_router.post("/admin/followups")
+async def create_followup(followup_data: FollowUp, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    followup_doc = followup_data.model_dump()
+    followup_doc['follow_up_date'] = followup_doc['follow_up_date'].isoformat()
+    followup_doc['created_at'] = followup_doc['created_at'].isoformat()
+    await db.followups.insert_one(followup_doc)
+    return followup_data
+
+@api_router.post("/admin/meetings")
+async def create_meeting(meeting_data: Meeting, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    meeting_doc = meeting_data.model_dump()
+    meeting_doc['meeting_date'] = meeting_doc['meeting_date'].isoformat()
+    meeting_doc['created_at'] = meeting_doc['created_at'].isoformat()
+    await db.meetings.insert_one(meeting_doc)
+    return meeting_data
+
+@api_router.patch("/admin/meetings/{meeting_id}")
+async def update_meeting(meeting_id: str, update_data: dict, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    # Only allow updating select fields for security
+    allowed_fields = {"status", "notes", "outcome", "meeting_date", "location", "agenda", "action_items", "attendees", "duration_minutes"}
+    sanitized = {k: v for k, v in update_data.items() if k in allowed_fields}
+    if "meeting_date" in sanitized and isinstance(sanitized["meeting_date"], str):
+        # keep ISO strings
+        sanitized["meeting_date"] = sanitized["meeting_date"]
+
+    sanitized["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    result = await db.meetings.update_one({"id": meeting_id}, {"$set": sanitized})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Meeting not found")
+
+    updated = await db.meetings.find_one({"id": meeting_id}, {"_id": 0})
+    return updated
+
+@api_router.get("/admin/meetings")
+async def get_meetings(
+    lead_id: Optional[str] = None,
+    customer_id: Optional[str] = None,
+    current_user: Customer = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    query = {}
+    if lead_id:
+        query["lead_id"] = lead_id
+    if customer_id:
+        query["customer_id"] = customer_id
+    
+    meetings = await db.meetings.find(query, {"_id": 0}).sort("meeting_date", -1).to_list(100)
+    return meetings
+
+# ===== PROJECT MANAGEMENT =====
+@api_router.get("/admin/projects")
+async def get_projects(
+    customer_id: Optional[str] = None,
+    status: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+    current_user: Customer = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    query = {}
+    if customer_id:
+        query["customer_id"] = customer_id
+    if status:
+        query["status"] = status
+    
+    total = await db.projects.count_documents(query)
+    projects = await db.projects.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return {"total": total, "projects": projects}
+
+@api_router.post("/admin/projects")
+async def create_project(project_data: Project, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    count = await db.projects.count_documents({})
+    project_data.project_number = f"PRJ-{datetime.now().year}-{str(count + 1).zfill(4)}"
+    
+    project_doc = project_data.model_dump()
+    project_doc['created_at'] = project_doc['created_at'].isoformat()
+    project_doc['updated_at'] = project_doc['updated_at'].isoformat()
+    if project_doc.get('target_delivery_date'):
+        project_doc['target_delivery_date'] = project_doc['target_delivery_date'].isoformat()
+    
+    await db.projects.insert_one(project_doc)
+    return project_data
+
+@api_router.get("/admin/projects/{project_id}/parts")
+async def get_project_parts(project_id: str, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    parts = await db.parts.find({"project_id": project_id}, {"_id": 0}).to_list(100)
+    return parts
+
+@api_router.post("/admin/parts")
+async def create_part(part_data: Part, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    part_doc = part_data.model_dump()
+    part_doc['created_at'] = part_doc['created_at'].isoformat()
+    part_doc['updated_at'] = part_doc['updated_at'].isoformat()
+    if part_doc.get('due_date'):
+        part_doc['due_date'] = part_doc['due_date'].isoformat()
+    
+    await db.parts.insert_one(part_doc)
+    return part_data
+
+@api_router.patch("/admin/parts/{part_id}")
+async def update_part(part_id: str, update_data: dict, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.parts.update_one({"id": part_id}, {"$set": update_data})
+    return {"message": "Part updated"}
+
+# ===== SUPPLIER MANAGEMENT =====
+@api_router.get("/admin/suppliers")
+async def get_suppliers(
+    capability: Optional[str] = None,
+    active: Optional[bool] = None,
+    current_user: Customer = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    query = {}
+    if capability:
+        query["capabilities"] = capability
+    if active is not None:
+        query["active"] = active
+    
+    suppliers = await db.suppliers.find(query, {"_id": 0}).sort("company_name", 1).to_list(100)
+    return suppliers
+
+@api_router.post("/admin/suppliers")
+async def create_supplier(supplier_data: Supplier, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    supplier_doc = supplier_data.model_dump()
+    supplier_doc['created_at'] = supplier_doc['created_at'].isoformat()
+    await db.suppliers.insert_one(supplier_doc)
+    return supplier_data
+
+@api_router.post("/admin/assignments")
+async def create_assignment(assignment_data: SupplierAssignment, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    assignment_doc = assignment_data.model_dump()
+    assignment_doc['assigned_date'] = assignment_doc['assigned_date'].isoformat()
+    assignment_doc['created_at'] = assignment_doc['created_at'].isoformat()
+    if assignment_doc.get('expected_completion'):
+        assignment_doc['expected_completion'] = assignment_doc['expected_completion'].isoformat()
+    
+    await db.supplier_assignments.insert_one(assignment_doc)
+    
+    # Update part/project status
+    if assignment_data.assignment_type == "project" and assignment_data.project_id:
+        await db.projects.update_one(
+            {"id": assignment_data.project_id},
+            {"$set": {"status": ProjectStatus.IN_PRODUCTION, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        await db.parts.update_many(
+            {"project_id": assignment_data.project_id},
+            {"$set": {"status": PartStatus.ASSIGNED, "supplier_id": assignment_data.supplier_id, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+    elif assignment_data.assignment_type == "parts" and assignment_data.part_ids:
+        for part_id in assignment_data.part_ids:
+            await db.parts.update_one(
+                {"id": part_id},
+                {"$set": {"status": PartStatus.ASSIGNED, "supplier_id": assignment_data.supplier_id, "updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+    
+    return assignment_data
+
+@api_router.get("/admin/suppliers/{supplier_id}/assignments")
+async def get_supplier_assignments(supplier_id: str, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    assignments = await db.supplier_assignments.find({"supplier_id": supplier_id}, {"_id": 0}).sort("assigned_date", -1).to_list(100)
+    
+    for assignment in assignments:
+        if assignment.get("project_id"):
+            project = await db.projects.find_one({"id": assignment["project_id"]}, {"_id": 0})
+            assignment["project_details"] = project
+        
+        if assignment.get("part_ids"):
+            parts = await db.parts.find({"id": {"$in": assignment["part_ids"]}}, {"_id": 0}).to_list(100)
+            assignment["parts_details"] = parts
+    
+    return assignments
+
+# ===== BLOG MANAGEMENT =====
+@api_router.post("/admin/blog/posts")
+async def create_admin_blog_post(post_data: BlogPostCreate, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    slug = post_data.title.lower().replace(' ', '-').replace(':', '').replace(',', '')
+    slug = ''.join(c for c in slug if c.isalnum() or c == '-')
+    
+    post = BlogPost(
+        title=post_data.title,
+        slug=slug,
+        category=post_data.category,
+        summary=post_data.summary,
+        content=post_data.content,
+        hero_image=post_data.hero_image,
+        tags=post_data.tags,
+        read_time_minutes=post_data.read_time_minutes,
+        meta_title=post_data.meta_title,
+        meta_description=post_data.meta_description,
+        published=post_data.published
+    )
+    
+    post_doc = post.model_dump()
+    post_doc['published_at'] = post_doc['published_at'].isoformat()
+    post_doc['created_at'] = post_doc['created_at'].isoformat()
+    await db.blog_posts.insert_one(post_doc)
+    
+    return post
+
+@api_router.get("/admin/blog/posts/all")
+async def get_all_admin_blog_posts(published: Optional[bool] = None, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    query = {}
+    if published is not None:
+        query["published"] = published
+    
+    posts = await db.blog_posts.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return posts
+
+@api_router.patch("/admin/blog/posts/{post_id}")
+async def update_admin_blog_post(post_id: str, update_data: BlogPostUpdate, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    update_dict = {k: v for k, v in update_data.model_dump().items() if v is not None}
+    
+    if update_dict:
+        await db.blog_posts.update_one({"id": post_id}, {"$set": update_dict})
+    
+    return {"message": "Blog post updated"}
+
+@api_router.delete("/admin/blog/posts/{post_id}")
+async def delete_admin_blog_post(post_id: str, current_user: Customer = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    result = await db.blog_posts.delete_one({"id": post_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return {"message": "Blog post deleted"}
+
+# ===== CUSTOMER MANAGEMENT =====
+@api_router.get("/admin/customers")
+async def get_customers(
+    search: Optional[str] = None,
+    role: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 50,
+    current_user: Customer = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    query = {}
+    if search:
+        query["$or"] = [
+            {"email": {"$regex": search, "$options": "i"}},
+            {"name": {"$regex": search, "$options": "i"}},
+            {"company": {"$regex": search, "$options": "i"}}
+        ]
+    if role:
+        query["role"] = role
+    
+    total = await db.customers.count_documents(query)
+    customers = await db.customers.find(
+        query, 
+        {"_id": 0, "password_hash": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return {"total": total, "customers": customers}
+
+@api_router.put("/admin/customers/{customer_id}/role")
+async def update_customer_role(
+    customer_id: str,
+    role_data: dict,
+    current_user: Customer = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    new_role = role_data.get("role")
+    if not new_role or new_role not in ["ADMIN", "OWNER", "BUYER", "SUPPLIER", "VIEWER"]:
+        raise HTTPException(status_code=400, detail="Invalid role")
+    
+    # Prevent admin from changing their own role
+    if customer_id == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot change your own role")
+    
+    result = await db.customers.update_one(
+        {"id": customer_id},
+        {"$set": {"role": new_role, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    return {"message": f"Role updated to {new_role}"}
+
+# ===== FILE ROUTES =====
+@api_router.get("/files/{file_id}")
+async def download_file(file_id: str):
+    try:
+        file_info = await file_service.get_file_info(file_id)
+        if not file_info:
+            raise HTTPException(status_code=404, detail="File not found")
+        
+        contents = await file_service.download_file(file_id)
+        
+        return StreamingResponse(
+            io.BytesIO(contents),
+            media_type="application/octet-stream",
+            headers={"Content-Disposition": f"attachment; filename={file_info['filename']}"}
+        )
+    except Exception as e:
+        logger.error(f"File download failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/admin/upload-image")
+async def upload_blog_image(
+    file: UploadFile = File(...),
+    current_user: Customer = Depends(get_current_user)
+):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    try:
+        allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"]
+        if file.content_type not in allowed_types:
+            raise HTTPException(status_code=400, detail="Invalid file type. Only images allowed.")
+        
+        gridfs_id = await file_service.upload_file(file, {
+            "entity_type": "blog_image",
+            "uploaded_by": current_user.id
+        })
+        
+        attachment = Attachment(
+            entity_type="blog_image",
+            entity_id=gridfs_id,
+            file_name=file.filename,
+            file_size=file.size,
+            file_type=file.content_type,
+            gridfs_id=gridfs_id,
+            uploaded_by=current_user.id
+        )
+        
+        att_doc = attachment.model_dump()
+        att_doc['uploaded_at'] = att_doc['uploaded_at'].isoformat()
+        await db.attachments.insert_one(att_doc)
+        
+        backend_url = os.environ.get('BACKEND_URL')
+        if not backend_url:
+            backend_url = os.environ.get('REACT_APP_BACKEND_URL')
+        if not backend_url:
+            raise HTTPException(status_code=500, detail="BACKEND_URL not configured")
+        image_url = f"{backend_url}/api/images/{gridfs_id}"
+        
+        return {
+            "success": True,
+            "image_url": image_url,
+            "file_id": gridfs_id,
+            "file_name": file.filename
+        }
+    except Exception as e:
+        logger.error(f"Image upload failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/images/{file_id}")
+async def get_image(file_id: str):
+    try:
+        file_info = await file_service.get_file_info(file_id)
+        if not file_info:
+            raise HTTPException(status_code=404, detail="Image not found")
+        
+        contents = await file_service.download_file(file_id)
+        
+        return StreamingResponse(
+            io.BytesIO(contents),
+            media_type=file_info.get('contentType', 'image/jpeg')
+        )
+    except Exception as e:
+        logger.error(f"Image retrieval failed: {str(e)}")
+        raise HTTPException(status_code=404, detail="Image not found")
+
+# ===== SEED DATA ROUTE =====
+@api_router.post("/seed-data")
+async def seed_database():
+    from seed_data import get_seed_quotes, get_seed_orders, get_seed_notifications, get_seed_blog_posts
+    from admin_seed_data import (
+        get_demo_leads, get_demo_followups, get_demo_meetings,
+        get_demo_projects, get_demo_parts, get_demo_suppliers,
+        get_demo_assignments, get_demo_contact_submissions, get_demo_quality_reports
+    )
+    
+    try:
+        await db.quotes.delete_many({"customer_id": {"$regex": "^seed_"}})
+        await db.orders.delete_many({"customer_id": {"$regex": "^seed_"}})
+        await db.notifications.delete_many({"recipient_id": {"$in": ["admin", "seed_customer_1", "seed_customer_2"]}})
+        await db.blog_posts.delete_many({})
+        
+        # Clear admin data
+        await db.leads.delete_many({})
+        await db.followups.delete_many({})
+        await db.meetings.delete_many({})
+        await db.projects.delete_many({})
+        await db.parts.delete_many({})
+        await db.suppliers.delete_many({})
+        await db.supplier_assignments.delete_many({})
+        await db.contact_submissions.delete_many({})
+        await db.quality_reports.delete_many({})
+        
+        quotes = get_seed_quotes()
+        if quotes:
+            await db.quotes.insert_many(quotes)
+        
+        orders = get_seed_orders()
+        if orders:
+            await db.orders.insert_many(orders)
+        
+        notifications = get_seed_notifications()
+        if notifications:
+            await db.notifications.insert_many(notifications)
+        
+        blog_posts = get_seed_blog_posts()
+        if blog_posts:
+            await db.blog_posts.insert_many(blog_posts)
+        
+        # Insert admin demo data
+        leads = get_demo_leads()
+        if leads:
+            await db.leads.insert_many(leads)
+        
+        followups = get_demo_followups(leads)
+        if followups:
+            await db.followups.insert_many(followups)
+        
+        meetings = get_demo_meetings(leads)
+        if meetings:
+            await db.meetings.insert_many(meetings)
+        
+        projects = get_demo_projects()
+        if projects:
+            await db.projects.insert_many(projects)
+        
+        parts = get_demo_parts(projects)
+        if parts:
+            await db.parts.insert_many(parts)
+        
+        suppliers = get_demo_suppliers()
+        if suppliers:
+            await db.suppliers.insert_many(suppliers)
+        
+        assignments = get_demo_assignments(projects, parts)
+        if assignments:
+            await db.supplier_assignments.insert_many(assignments)
+        
+        contact_subs = get_demo_contact_submissions()
+        if contact_subs:
+            await db.contact_submissions.insert_many(contact_subs)
+        
+        quality_reports = get_demo_quality_reports()
+        if quality_reports:
+            await db.quality_reports.insert_many(quality_reports)
+        
+        return {
+            "message": "Database seeded successfully",
+            "counts": {
+                "quotes": len(quotes),
+                "orders": len(orders),
+                "notifications": len(notifications),
+                "blog_posts": len(blog_posts),
+                "leads": len(leads),
+                "followups": len(followups),
+                "meetings": len(meetings),
+                "projects": len(projects),
+                "parts": len(parts),
+                "suppliers": len(suppliers),
+                "assignments": len(assignments),
+                "contact_submissions": len(contact_subs),
+                "quality_reports": len(quality_reports)
+            }
+        }
+    except Exception as e:
+        logger.error(f"Seed failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ===== DASHBOARD ROUTES =====
+
+@api_router.get("/dashboard/metrics")
+async def get_dashboard_metrics(current_user: Customer = Depends(get_current_user)):
+    """Get dashboard metrics based on user role"""
+    
+    if current_user.role == UserRole.ADMIN:
+        # Admin metrics
+        total_customers = await db.customers.count_documents({"role": {"$ne": UserRole.ADMIN}})
+        total_orders = await db.orders.count_documents({})
+        total_quotes = await db.quotes.count_documents({})
+        total_leads = await db.leads.count_documents({})
+        
+        # Recent activity
+        recent_orders = await db.orders.find({}, {"_id": 0}).sort("created_at", -1).limit(5).to_list(5)
+        recent_quotes = await db.quotes.find({}, {"_id": 0}).sort("created_at", -1).limit(5).to_list(5)
+        
+        return {
+            "total_customers": total_customers,
+            "total_orders": total_orders,
+            "total_quotes": total_quotes,
+            "total_leads": total_leads,
+            "recent_orders": recent_orders,
+            "recent_quotes": recent_quotes
+        }
+    
+    elif current_user.role == UserRole.BUYER:
+        # Customer metrics
+        active_projects = await db.projects.count_documents({"customer_id": current_user.id, "status": {"$in": ["active", "in_progress"]}})
+        total_orders = await db.orders.count_documents({"customer_id": current_user.id})
+        total_quotes = await db.quotes.count_documents({"customer_id": current_user.id})
+        total_spend = await db.orders.aggregate([
+            {"$match": {"customer_id": current_user.id, "status": "completed"}},
+            {"$group": {"_id": None, "total": {"$sum": "$total_price"}}}
+        ]).to_list(1)
+        
+        total_spend_value = total_spend[0]["total"] if total_spend else 0
+        
+        return {
+            "active_projects": active_projects,
+            "total_orders": total_orders,
+            "total_quotes": total_quotes,
+            "total_spend": total_spend_value
+        }
+    
+    elif current_user.role == UserRole.SUPPLIER:
+        # Supplier metrics
+        active_orders = await db.orders.count_documents({"assigned_supplier": current_user.id, "status": {"$in": ["in_production", "assigned"]}})
+        completed_orders = await db.orders.count_documents({"assigned_supplier": current_user.id, "status": "completed"})
+        quality_reports = await db.quality_reports.count_documents({"supplier_id": current_user.id})
+        
+        return {
+            "active_orders": active_orders,
+            "completed_orders": completed_orders,
+            "quality_reports": quality_reports
+        }
+
+@api_router.get("/projects")
+async def get_projects(
+    current_user: Customer = Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 50
+):
+    """Get projects for customer or admin"""
+    if current_user.role == UserRole.ADMIN:
+        projects = await db.projects.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    elif current_user.role == UserRole.SUPPLIER:
+        # Suppliers see projects where they have assigned parts
+        # Get project IDs from supplier assignments
+        assignments = await db.supplier_assignments.find(
+            {"supplier_id": current_user.id}, 
+            {"project_id": 1, "_id": 0}
+        ).to_list(100)
+        project_ids = [a["project_id"] for a in assignments if a.get("project_id")]
+        if project_ids:
+            projects = await db.projects.find(
+                {"id": {"$in": project_ids}}, 
+                {"_id": 0}
+            ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+        else:
+            projects = []
+    else:
+        # Customers see only their own projects
+        projects = await db.projects.find({"customer_id": current_user.id}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return projects
+
+@api_router.get("/job-requests")
+async def get_job_requests(current_user: Customer = Depends(get_current_user)):
+    """Get job requests for suppliers"""
+    if current_user.role != UserRole.SUPPLIER:
+        raise HTTPException(status_code=403, detail="Supplier access required")
+    
+    # Get orders assigned to this supplier that are pending acceptance
+    job_requests = await db.orders.find({
+        "assigned_supplier": current_user.id,
+        "status": "assigned"
+    }, {"_id": 0}).sort("created_at", -1).to_list(50)
+    
+    return job_requests
+
+@api_router.post("/job-requests/{order_id}/accept")
+async def accept_job_request(
+    order_id: str,
+    current_user: Customer = Depends(get_current_user)
+):
+    """Accept a job request"""
+    if current_user.role != UserRole.SUPPLIER:
+        raise HTTPException(status_code=403, detail="Supplier access required")
+    
+    order = await db.orders.find_one({"id": order_id, "assigned_supplier": current_user.id})
+    if not order:
+        raise HTTPException(status_code=404, detail="Job request not found")
+    
+    await db.orders.update_one(
+        {"id": order_id},
+        {"$set": {"status": "in_production", "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Job request accepted"}
+
+@api_router.post("/job-requests/{order_id}/reject")
+async def reject_job_request(
+    order_id: str,
+    reason: Optional[str] = None,
+    current_user: Customer = Depends(get_current_user)
+):
+    """Reject a job request"""
+    if current_user.role != UserRole.SUPPLIER:
+        raise HTTPException(status_code=403, detail="Supplier access required")
+    
+    order = await db.orders.find_one({"id": order_id, "assigned_supplier": current_user.id})
+    if not order:
+        raise HTTPException(status_code=404, detail="Job request not found")
+    
+    await db.orders.update_one(
+        {"id": order_id},
+        {"$set": {"status": "rejected", "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Job request rejected"}
+
+@api_router.get("/quality-reports")
+async def get_quality_reports(
+    current_user: Customer = Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 50
+):
+    """Get quality reports for supplier or admin"""
+    if current_user.role == UserRole.ADMIN:
+        reports = await db.quality_reports.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    else:
+        reports = await db.quality_reports.find({"supplier_id": current_user.id}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    return reports
+
+@api_router.post("/quality-reports")
+async def create_quality_report(
+    order_id: str,
+    report_data: dict,
+    current_user: Customer = Depends(get_current_user)
+):
+    """Create a quality report"""
+    if current_user.role != UserRole.SUPPLIER:
+        raise HTTPException(status_code=403, detail="Supplier access required")
+    
+    # Verify the order belongs to this supplier
+    order = await db.orders.find_one({"id": order_id, "assigned_supplier": current_user.id})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found or not assigned to you")
+    
+    quality_report = {
+        "id": str(uuid.uuid4()),
+        "order_id": order_id,
+        "supplier_id": current_user.id,
+        "report_data": report_data,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "status": "submitted"
+    }
+    
+    await db.quality_reports.insert_one(quality_report)
+    
+    return quality_report
+
+@api_router.get("/suppliers")
+async def get_suppliers(current_user: Customer = Depends(get_current_user)):
+    """Get suppliers (admin only)"""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    suppliers = await db.customers.find({"role": UserRole.SUPPLIER}, {"_id": 0, "password_hash": 0}).to_list(100)
+    return suppliers
+
+# Custom exception handler for unhandled exceptions
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    """Handle any unhandled exceptions"""
+    print(f"\n{'='*70}")
+    print(f"[ERROR] UNHANDLED EXCEPTION")
+    print(f"[ERROR] Type: {type(exc).__name__}")
+    print(f"[ERROR] Message: {str(exc)}")
+    import traceback
+    traceback.print_exc()
+    print(f"{'='*70}\n")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {str(exc)}"},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "*",
+            "Access-Control-Allow-Headers": "*",
+        },
+    )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    """Handle Pydantic validation errors"""
+    print(f"\n{'='*70}")
+    print(f"[ERROR] VALIDATION ERROR")
+    print(f"[ERROR] Details: {exc.errors()}")
+    print(f"{'='*70}\n")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "*",
+            "Access-Control-Allow-Headers": "*",
+        },
+    )
+
+# Include the router in the main app
+app.include_router(api_router)
+
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=[
+#         "http://localhost:3000",
+#         "http://127.0.0.1:3000"
+#     ],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+
